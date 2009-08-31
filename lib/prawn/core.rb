@@ -6,20 +6,28 @@
 #
 # This is free software. Please see the LICENSE and COPYING files for details.
            
-%w[ttfunk/lib].each do |dep|
+%w[ttfunk/lib ruby-rc4/lib].each do |dep|
   $LOAD_PATH.unshift(File.dirname(__FILE__) + "/../../vendor/#{dep}")
 end
 
-begin
-  require 'ttfunk'
-rescue LoadError
-  puts "Failed to load ttfunk. If you are running Prawn from git:"
-  puts "  git submodule init"
-  puts "  git submodule update"
-  exit
-end
-
 module Prawn
+  extend self
+
+  def require_vendor_dependency(*deps)
+    deps.each do |dep|
+      begin
+        require dep
+      rescue LoadError
+        puts "Failed to load #{dep}. If you are running Prawn from git:"
+        puts "  git submodule init"
+        puts "  git submodule update"
+        exit
+      end
+    end
+  end
+
+  require_vendor_dependency 'ttfunk', 'rc4'
+
   file = __FILE__
   file = File.readlink(file) if File.symlink?(file)
   dir = File.dirname(file)
@@ -27,8 +35,6 @@ module Prawn
   # The base source directory for Prawn as installed on the system
   BASEDIR = File.expand_path(File.join(dir, '..', '..'))
   
-  extend self
-
   # Whe set to true, Prawn will verify hash options to ensure only valid keys
   # are used.  Off by default.
   # 
