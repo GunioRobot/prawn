@@ -15,6 +15,7 @@ require "prawn/document/internals"
 require "prawn/document/span"
 require "prawn/document/annotations"
 require "prawn/document/destinations"
+require "prawn/document/encryption"
 
 module Prawn
   # The Prawn::Document class is how you start creating a PDF document.
@@ -56,6 +57,7 @@ module Prawn
     include Internals
     include Annotations
     include Destinations
+    include Encryption
     include Prawn::Graphics
     include Prawn::Images
 
