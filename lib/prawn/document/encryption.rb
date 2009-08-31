@@ -17,19 +17,66 @@ module Prawn
     # specified in the PDF Reference, version 1.3, section 3.5 "Encryption".
     module Encryption
       
-      # TODO: doc
+      # Encrypts the document, to protect confidential data or control
+      # modifications to the document. The encryption algorithm used is
+      # detailed in the PDF Reference 1.3, section 3.5 "Encryption", and it is
+      # implemented by all major PDF readers.
+      #
+      # +options+ can contain the following:
+      # 
+      # <tt>:user_password</tt>:: Password required to open the document. If 
+      #                           this is omitted or empty, no password will be
+      #                           required (but the document will still be
+      #                           encrypted).
+      #
+      # <tt>:owner_password</tt>:: Password required to make modifications to 
+      #                            the document or change or override its
+      #                            permissions. If this is set to
+      #                            <tt>:random</tt>, a random password will be
+      #                            used; this can be useful if you never want
+      #                            users to be able to override the document
+      #                            permissions.
+      #
+      # <tt>:permissions</tt>:: A hash mapping permission symbols (see below) to
+      #                         <tt>true</tt> or <tt>false</tt>. True means
+      #                         "permitted", and false means "not permitted".
       #
       # The following permissions can be specified:
       #
-      # [+:print_document+] Print document.
-      # [+:modify_document+] Modify contents of document (other than text
-      #     annotations and interactive form fields).
-      # [+:copy_contents+] Copy text and graphics from document.
-      # [+:modify_annotations+] Add or modify text annotations and interactive
-      #     form fields.
+      # <tt>:print_document</tt>:: Print document.
+      #
+      # <tt>:modify_document</tt>:: Modify contents of document (other than text
+      #                             annotations and interactive form fields).
+      #
+      # <tt>:copy_contents</tt>:: Copy text and graphics from document.
+      #
+      # <tt>:modify_annotations</tt>:: Add or modify text annotations and 
+      #                                interactive form fields.
+      #
+      # == Examples
+      #
+      # TODO
+      #
+      # == Caveats
+      #
+      # * The encryption used is weak; the key is password-derived and is
+      #   limited to 40 bits, due to US export controls in effect at the time
+      #   the PDF standard was written.
+      # 
+      # * There is nothing technologically requiring PDF readers to respect the
+      #   permissions embedded in a document. Many PDF readers do not.
+      #
       def encrypt_document(options={})
+        Prawn.verify_options [:user_password, :owner_password, :permissions],
+          options
         @user_password = options.delete(:user_password) || ""
+
         @owner_password = options.delete(:owner_password) || @user_password
+        if @owner_password == :random
+          # Generate a completely ridiculous password
+          @owner_password = (1..32).map{ rand(256) }.pack("c*")
+        end
+
         self.permissions = options.delete(:permissions) || {}
 
         # Shove the necessary entries in the trailer.
@@ -37,6 +84,22 @@ module Prawn
         @encrypted = true
       end
       
+      # Encrypts the given string under the given key, also requiring the
+      # object ID and generation number of the reference.
+      # See Algorithm 3.1.
+      def self.encrypt_string(str, key, id, gen)
+        # Convert ID and Gen number into little-endian truncated byte strings
+        id = [id].pack('V')[0,3]
+        gen = [gen].pack('V')[0,2]
+        extended_key = "#{key}#{id}#{gen}"
+
+        # Compute the RC4 key from the extended key and perform the encryption
+        rc4_key = Digest::MD5.digest(extended_key)[0, 10]
+        RubyRc4.new(rc4_key).encrypt(str)
+      end
+
+      protected
+
       # Provides the values for the trailer encryption dictionary.
       def encryption_dictionary
         { :Filter => :Standard, # default PDF security handler
@@ -45,6 +108,32 @@ module Prawn
           :O      => ByteString.new(owner_password_hash),
           :U      => ByteString.new(user_password_hash),
           :P      => permissions_value }
+      end
+
+      # Flags in the permissions word, numbered as LSB = 1
+      PermissionsBits = { :print_document     => 3,
+                          :modify_contents    => 4,
+                          :copy_contents      => 5,
+                          :modify_annotations => 6 }
+      
+      FullPermissions = 0b1111_1111_1111_1111_1111_1111_1111_1111
+
+      def permissions=(perms={})
+        @permissions ||= FullPermissions
+        perms.each do |key, value|
+          # 0-based bit number, from LSB
+          bit_position = PermissionsBits[key] - 1
+
+          if value # set bit
+            @permissions |= (1 << bit_position)
+          else # clear bit
+            @permissions &= ~(1 << bit_position)
+          end
+        end
+      end
+
+      def permissions_value
+        @permissions || FullPermissions
       end
 
       PasswordPadding = 
@@ -80,45 +169,6 @@ module Prawn
         RubyRc4.new(user_encryption_key).encrypt(PasswordPadding)
       end
 
-      # Flags in the permissions word, numbered as LSB = 1
-      PermissionsBits = { :print_document     => 3,
-                          :modify_contents    => 4,
-                          :copy_contents      => 5,
-                          :modify_annotations => 6 }
-      
-      FullPermissions = 0b1111_1111_1111_1111_1111_1111_1111_1111
-
-      def permissions=(perms={})
-        @permissions ||= FullPermissions
-        perms.each do |key, value|
-          # 0-based bit number, from LSB
-          bit_position = PermissionsBits[key] - 1
-
-          if value # set bit
-            @permissions |= (1 << bit_position)
-          else # clear bit
-            @permissions &= ~(1 << bit_position)
-          end
-        end
-      end
-
-      def permissions_value
-        @permissions || FullPermissions
-      end
-
-      # Encrypts the given string under the given key, also requiring the
-      # object ID and generation number of the reference.
-      # See Algorithm 3.1.
-      def self.encrypt_string(str, key, id, gen)
-        # Convert ID and Gen number into little-endian truncated byte strings
-        id = [id].pack('V')[0,3]
-        gen = [gen].pack('V')[0,2]
-        extended_key = "#{key}#{id}#{gen}"
-
-        # Compute the RC4 key from the extended key and perform the encryption
-        rc4_key = Digest::MD5.digest(extended_key)[0, 10]
-        RubyRc4.new(rc4_key).encrypt(str)
-      end
     end
 
   end
@@ -166,6 +216,8 @@ module Prawn
 
   class Reference
 
+    # Returns the object definition for the object this references, keyed from
+    # +key+.
     def encrypted_object(key)
       @on_encode.call(self) if @on_encode
       output = "#{@identifier} #{gen} obj\n" <<

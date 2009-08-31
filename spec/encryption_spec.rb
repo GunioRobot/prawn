@@ -36,6 +36,12 @@ describe "Document encryption" do
     
     def doc_with_permissions(permissions)
       pdf = Prawn::Document.new
+
+      class << pdf
+        # Make things easier to test
+        public :permissions_value
+      end
+
       pdf.encrypt_document(:permissions => permissions)
       pdf
     end
@@ -69,6 +75,9 @@ describe "Document encryption" do
 
     before(:each) do
       @pdf = Prawn::Document.new
+      class << @pdf
+        public :owner_password_hash, :user_password_hash, :user_encryption_key
+      end
       @pdf.encrypt_document :user_password => 'foo', :owner_password => 'bar',
         :permissions => { :print_document => false }
     end
@@ -86,6 +95,26 @@ describe "Document encryption" do
     end
 
 
+  end
+
+  describe "EncryptedPdfObject" do
+
+    it "should delegate to PdfObject for simple types" do
+      Prawn::EncryptedPdfObject(true, nil, nil, nil).should == "true"
+      Prawn::EncryptedPdfObject(42, nil, nil, nil).should == "42"
+    end
+
+    it "should encrypt strings properly" do
+      Prawn::EncryptedPdfObject("foo", "12345", 123, 0).should == "<4ad6e3>"
+    end
+
+    it "should properly handle compound types" do
+      Prawn::EncryptedPdfObject({:Bar => "foo"}, "12345", 123, 0).should ==
+        "<< /Bar <4ad6e3>\n>>"
+      Prawn::EncryptedPdfObject(["foo", "bar"], "12345", 123, 0).should ==
+        "[<4ad6e3> <4ed8fe>]"
+    end
+    
   end
 
 end
