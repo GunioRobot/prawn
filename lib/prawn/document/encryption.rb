@@ -34,6 +34,7 @@ module Prawn
 
         # Shove the necessary entries in the trailer.
         @trailer[:Encrypt] = encryption_dictionary
+        @encrypted = true
       end
       
       # Provides the values for the trailer encryption dictionary.
@@ -105,6 +106,76 @@ module Prawn
         @permissions || FullPermissions
       end
 
+      # Encrypts the given string under the given key, also requiring the
+      # object ID and generation number of the reference.
+      # See Algorithm 3.1.
+      def self.encrypt_string(str, key, id, gen)
+        # Convert ID and Gen number into little-endian truncated byte strings
+        id = [id].pack('V')[0,3]
+        gen = [gen].pack('V')[0,2]
+        extended_key = "#{key}#{id}#{gen}"
+
+        # Compute the RC4 key from the extended key and perform the encryption
+        rc4_key = Digest::MD5.digest(extended_key)[0, 10]
+        RubyRc4.new(rc4_key).encrypt(str)
+      end
+    end
+
+  end
+
+  # Like PdfObject, but returns an encrypted result if required.
+  # For direct objects, requires the object identifier and generation number
+  # from the indirect object referencing obj.
+  def EncryptedPdfObject(obj, key, id, gen, in_content_stream=false)
+    case obj
+    when Array
+      "[" << obj.map { |e|
+          EncryptedPdfObject(e, key, id, gen, in_content_stream)
+      }.join(' ') << "]"
+    when Prawn::LiteralString
+      # FIXME: encrypted?
+      obj = obj.gsub(/[\\\n\(\)]/) { |m| "\\#{m}" }
+      "(#{obj})"
+    when Time
+      # FIXME: encrypted?
+      obj = obj.strftime("D:%Y%m%d%H%M%S%z").chop.chop + "'00'"
+      obj = obj.gsub(/[\\\n\(\)]/) { |m| "\\#{m}" }
+      "(#{obj})"
+    when String
+      PdfObject(
+        ByteString.new(Document::Encryption.encrypt_string(obj, key, id, gen)),
+        in_content_stream)
+    when Hash
+      output = "<< "
+      obj.each do |k,v|
+        unless String === k || Symbol === k
+          raise Prawn::Errors::FailedObjectConversion,
+            "A PDF Dictionary must be keyed by names"
+        end
+        output << PdfObject(k.to_sym, in_content_stream) << " " <<
+                  EncryptedPdfObject(v, key, id, gen, in_content_stream) << "\n"
+      end
+      output << ">>"
+    when Prawn::NameTree::Value
+      PdfObject(obj.name) + " " +
+        EncryptedPdfObject(obj.value, key, id, gen, in_content_stream)
+    else # delegate back to PdfObject
+      PdfObject(obj, in_content_stream)
+    end
+  end
+
+  class Reference
+
+    def encrypted_object(key)
+      @on_encode.call(self) if @on_encode
+      output = "#{@identifier} #{gen} obj\n" <<
+               Prawn::EncryptedPdfObject(data, key, @identifier, gen) << "\n"
+      if @stream
+        output << "stream\n" <<
+          Document::Encryption.encrypt_string(@stream, key, @identifier, gen) <<
+          "\nendstream\n"
+      end
+      output << "endobj\n"
     end
 
   end
