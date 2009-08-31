@@ -6,6 +6,10 @@
 #
 # This is free software. Please see the LICENSE and COPYING files for details.
 
+require 'digest/md5'
+require 'rc4'
+require 'prawn/byte_string'
+
 module Prawn
   class Document
     
@@ -14,9 +18,22 @@ module Prawn
     module Encryption
       
       # TODO: doc
+      #
+      # The following permissions can be specified:
+      #
+      # [+:print_document+] Print document.
+      # [+:modify_document+] Modify contents of document (other than text
+      #     annotations and interactive form fields).
+      # [+:copy_contents+] Copy text and graphics from document.
+      # [+:modify_annotations+] Add or modify text annotations and interactive
+      #     form fields.
       def encrypt_document(options={})
-        # TODO: complete
+        @user_password = options.delete(:user_password) || ""
+        @owner_password = options.delete(:owner_password) || @user_password
         self.permissions = options.delete(:permissions) || {}
+
+        # Shove the necessary entries in the trailer.
+        @trailer[:Encrypt] = encryption_dictionary
       end
       
       # Provides the values for the trailer encryption dictionary.
@@ -24,8 +41,8 @@ module Prawn
         { :Filter => :Standard, # default PDF security handler
           :V      => 1,         # "Algorithm 3.1", PDF reference 1.3
           :R      => 2,         # Revision 2 of the algorithm
-          :O      => owner_password_hash,
-          :U      => user_password_hash,
+          :O      => ByteString.new(owner_password_hash),
+          :U      => ByteString.new(user_password_hash),
           :P      => permissions_value }
       end
 
@@ -39,12 +56,27 @@ module Prawn
         password + PasswordPadding[0, 32 - password.length]
       end
 
-      def owner_password_hash
-        # TODO
+      def user_encryption_key
+        @user_encryption_key ||= begin
+          md5 = Digest::MD5.new
+          md5 << pad_password(@user_password)
+          md5 << owner_password_hash
+          md5 << [permissions_value].pack("V")
+          md5.digest[0, 5]
+        end
       end
 
+      # The O (owner) value in the encryption dictionary. Algorithm 3.3.
+      def owner_password_hash
+        @owner_password_hash ||= begin
+          key = Digest::MD5.digest(pad_password(@owner_password))[0, 5]
+          RubyRc4.new(key).encrypt(pad_password(@user_password))
+        end
+      end
+
+      # The U (user) value in the encryption dictionary. Algorithm 3.4.
       def user_password_hash
-        # TODO
+        RubyRc4.new(user_encryption_key).encrypt(PasswordPadding)
       end
 
       # Flags in the permissions word, numbered as LSB = 1
