@@ -120,7 +120,7 @@ module Prawn
         trailer_hash = {:Size => @objects.size + 1, 
                         :Root => @root,
                         :Info => @info}
-        trailer_hash.merge(@trailer) if @trailer
+        trailer_hash.merge!(@trailer) if @trailer
 
         output << "trailer\n"
         output << Prawn::PdfObject(trailer_hash) << "\n"
