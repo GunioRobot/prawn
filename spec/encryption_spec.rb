@@ -4,6 +4,33 @@ require "tempfile"
 require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper") 
 
 describe "Document encryption" do
+
+  describe "Password padding" do
+
+    include Prawn::Document::Encryption
+
+    it "should truncate long passwords" do
+      pw = "Long long string" * 30
+      padded = pad_password(pw)
+      padded.length.should == 32
+      padded.should == pw[0, 32]
+    end
+
+    it "should pad short passwords" do
+      pw = "abcd"
+      padded = pad_password(pw)
+      padded.length.should == 32
+      padded.should == pw + Prawn::Document::Encryption::PasswordPadding[0, 28]
+    end
+
+    it "should fully pad null passwords" do
+      pw = ""
+      padded = pad_password(pw)
+      padded.length.should == 32
+      padded.should == Prawn::Document::Encryption::PasswordPadding
+    end
+
+  end
   
   describe "Setting permissions" do
     

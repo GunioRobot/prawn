@@ -9,6 +9,8 @@
 module Prawn
   class Document
     
+    # Implements PDF encryption (password protection and permissions) as
+    # specified in the PDF Reference, version 1.3, section 3.5 "Encryption".
     module Encryption
       
       # TODO: doc
@@ -25,6 +27,16 @@ module Prawn
           :O      => owner_password_hash,
           :U      => user_password_hash,
           :P      => permissions_value }
+      end
+
+      PasswordPadding = 
+        "28BF4E5E4E758A4164004E56FFFA01082E2E00B6D0683E802F0CA9FE6453697A".
+        scan(/../).map{|x| x.to_i(16)}.pack("c*")
+      
+      # Pads or truncates a password to 32 bytes as per Alg 3.2.
+      def pad_password(password)
+        password = password[0, 32]
+        password + PasswordPadding[0, 32 - password.length]
       end
 
       def owner_password_hash
