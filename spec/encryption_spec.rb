@@ -62,4 +62,30 @@ describe "Document encryption" do
 
   end
 
+  describe "Encryption keys" do
+    # Since PDF::Reader doesn't read encrypted PDF files, we just take the
+    # roundabout method of verifying each step of the encryption. This works
+    # fine because the encryption method is deterministic.
+
+    before(:each) do
+      @pdf = Prawn::Document.new
+      @pdf.encrypt_document :user_password => 'foo', :owner_password => 'bar',
+        :permissions => { :print_document => false }
+    end
+
+    it "should calculate the correct owner hash" do
+      @pdf.owner_password_hash.unpack("H*").first.should.match(/^61CA855012/i)
+    end
+
+    it "should calculate the correct user hash" do
+      @pdf.user_password_hash.unpack("H*").first.should =~ /^6BC8C51031/i
+    end
+
+    it "should calculate the correct user_encryption_key" do
+      @pdf.user_encryption_key.unpack("H*").first.upcase.should == "B100AB6429"
+    end
+
+
+  end
+
 end
