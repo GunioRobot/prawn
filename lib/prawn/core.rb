@@ -10,23 +10,17 @@
   $LOAD_PATH.unshift(File.dirname(__FILE__) + "/../../vendor/#{dep}")
 end
 
+begin
+  require 'ttfunk'
+rescue LoadError
+  puts "Failed to load ttfunk. If you are running Prawn from git:"
+  puts "  git submodule init"
+  puts "  git submodule update"
+  exit
+end
+
 module Prawn
   extend self
-
-  def require_vendor_dependency(*deps)
-    deps.each do |dep|
-      begin
-        require dep
-      rescue LoadError
-        puts "Failed to load #{dep}. If you are running Prawn from git:"
-        puts "  git submodule init"
-        puts "  git submodule update"
-        exit
-      end
-    end
-  end
-
-  require_vendor_dependency 'ttfunk', 'rc4'
 
   file = __FILE__
   file = File.readlink(file) if File.symlink?(file)

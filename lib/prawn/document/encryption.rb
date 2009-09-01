@@ -7,7 +7,7 @@
 # This is free software. Please see the LICENSE and COPYING files for details.
 
 require 'digest/md5'
-require 'rc4'
+require 'arcfour'
 require 'prawn/byte_string'
 
 module Prawn
@@ -114,7 +114,7 @@ module Prawn
 
         # Compute the RC4 key from the extended key and perform the encryption
         rc4_key = Digest::MD5.digest(extended_key)[0, 10]
-        RubyRc4.new(rc4_key).encrypt(str)
+        Arcfour.new(rc4_key).encrypt(str)
       end
 
       private
@@ -179,13 +179,13 @@ module Prawn
       def owner_password_hash
         @owner_password_hash ||= begin
           key = Digest::MD5.digest(pad_password(@owner_password))[0, 5]
-          RubyRc4.new(key).encrypt(pad_password(@user_password))
+          Arcfour.new(key).encrypt(pad_password(@user_password))
         end
       end
 
       # The U (user) value in the encryption dictionary. Algorithm 3.4.
       def user_password_hash
-        RubyRc4.new(user_encryption_key).encrypt(PasswordPadding)
+        Arcfour.new(user_encryption_key).encrypt(PasswordPadding)
       end
 
     end
