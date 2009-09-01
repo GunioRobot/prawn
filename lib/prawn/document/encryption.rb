@@ -26,8 +26,8 @@ module Prawn
       # 
       # <tt>:user_password</tt>:: Password required to open the document. If 
       #                           this is omitted or empty, no password will be
-      #                           required (but the document will still be
-      #                           encrypted).
+      #                           required. The document will still be
+      #                           encrypted, but anyone can read it.
       #
       # <tt>:owner_password</tt>:: Password required to make modifications to 
       #                            the document or change or override its
@@ -40,6 +40,7 @@ module Prawn
       # <tt>:permissions</tt>:: A hash mapping permission symbols (see below) to
       #                         <tt>true</tt> or <tt>false</tt>. True means
       #                         "permitted", and false means "not permitted".
+      #                         All permissions default to <tt>true</tt>.
       #
       # The following permissions can be specified:
       #
@@ -55,7 +56,20 @@ module Prawn
       #
       # == Examples
       #
-      # TODO
+      # Deny printing to everyone, but allow anyone to open without a password:
+      #
+      #   encrypt_document :permissions => { :print_document => false },
+      #                    :owner_password => :random
+      #
+      # Set a user and owner password on the document, with full permissions for
+      # both the user and the owner:
+      #
+      #   encrypt_document :user_password => 'foo', :owner_password => 'bar'
+      # 
+      # Set no passwords, grant all permissions (This is useful because the 
+      # default in some readers, if no permissions are specified, is "deny"):
+      #
+      #   encrypt_document
       #
       # == Caveats
       #
@@ -65,6 +79,11 @@ module Prawn
       # 
       # * There is nothing technologically requiring PDF readers to respect the
       #   permissions embedded in a document. Many PDF readers do not.
+      # 
+      # * In short, you have <b>no security at all</b> against a moderately
+      #   motivated person. Don't use this for anything super-serious. This is
+      #   not a limitation of Prawn, but is rather a built-in limitation of the
+      #   PDF format.
       #
       def encrypt_document(options={})
         Prawn.verify_options [:user_password, :owner_password, :permissions],
@@ -98,7 +117,7 @@ module Prawn
         RubyRc4.new(rc4_key).encrypt(str)
       end
 
-      protected
+      private
 
       # Provides the values for the trailer encryption dictionary.
       def encryption_dictionary
