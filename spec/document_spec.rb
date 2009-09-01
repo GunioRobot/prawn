@@ -160,6 +160,14 @@ describe "The render() feature" do
       str.encoding.to_s.should == "ASCII-8BIT"
     end
   end
+
+  it "should respect extra entries added to the trailer" do
+    pdf = Prawn::Document.new do
+      @trailer[:Foo] = :BarBaz
+    end
+    str = pdf.render
+    str.should =~ %r{/Foo /BarBaz}
+  end
 end
 
 describe "PDF file versions" do

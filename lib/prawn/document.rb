@@ -146,6 +146,7 @@ module Prawn
        @info    = ref(options[:info])
        @pages   = ref(:Type => :Pages, :Count => 0, :Kids => [])
        @root    = ref(:Type => :Catalog, :Pages => @pages)
+       @trailer = {}
        @page_size       = options[:page_size]   || "LETTER"
        @page_layout     = options[:page_layout] || :portrait
        @compress        = options[:compress] || false
