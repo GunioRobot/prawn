@@ -6,7 +6,7 @@ module Prawn
     class TTF < Font
       attr_reader :ttf, :subsets
       
-      def initialize(document, name, options={})
+      def initialize(name, options={})
         super
 
         @ttf              = read_ttf_file
@@ -220,18 +220,18 @@ module Prawn
         @scale ||= 1000.0 / @ttf.header.units_per_em
       end
 
-      def register(subset)
+      def register(document, subset)
         temp_name = @ttf.name.postscript_name.gsub("\0","").to_sym
-        ref = @document.ref!(:Type => :Font, :BaseFont => temp_name)
+        ref = document.ref!(:Type => :Font, :BaseFont => temp_name)
 
         # Embed the font metrics in the document after everything has been 
         # drawn, just before the document is emitted.
-        @document.before_render { |doc| embed(ref, subset) }
+        document.before_render { |doc| embed(doc, ref, subset) }
 
         ref
       end
 
-      def embed(reference, subset)
+      def embed(document, reference, subset)
         font_content = @subsets[subset].encode
 
         # FIXME: we need postscript_name and glyph widths from the font
@@ -247,12 +247,12 @@ module Prawn
 
         compressed_font = Zlib::Deflate.deflate(font_content)
 
-        fontfile = @document.ref!(:Length => compressed_font.size,
+        fontfile = document.ref!(:Length => compressed_font.size,
                                  :Length1 => font_content.size,
                                  :Filter => :FlateDecode )
         fontfile << compressed_font
 
-        descriptor = @document.ref!(:Type        => :FontDescriptor,
+        descriptor = document.ref!(:Type        => :FontDescriptor,
                                    :FontName    => basename.to_sym,
                                    :FontFile2   => fontfile,
                                    :FontBBox    => bbox,
@@ -293,7 +293,7 @@ module Prawn
 
         to_unicode_cmap = UNICODE_CMAP_TEMPLATE % range_blocks.strip
 
-        cmap = @document.ref!({})
+        cmap = document.ref!({})
         cmap << to_unicode_cmap
         cmap.compress_stream
 
@@ -302,7 +302,7 @@ module Prawn
                               :FontDescriptor => descriptor,
                               :FirstChar => 32,
                               :LastChar => 255,
-                              :Widths => @document.ref!(widths),
+                              :Widths => document.ref!(widths),
                               :ToUnicode => cmap)
       end
 

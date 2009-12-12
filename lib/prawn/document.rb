@@ -66,7 +66,6 @@ module Prawn
 
     attr_accessor :margin_box
     attr_reader   :margins, :page_size, :page_layout, :y
-    attr_writer   :font_size
 
 
     def self.extensions
@@ -182,7 +181,6 @@ module Prawn
        @compress      = options[:compress] || false
        @skip_encoding = options[:skip_encoding]
        @background    = options[:background]
-       @font_size     = 12
        @page_content  = nil
        @bounding_box  = nil
        @margin_box    = nil

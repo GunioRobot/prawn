@@ -22,7 +22,7 @@ module Prawn
 
       attr_reader :attributes
 
-      def initialize(document, name, options={})
+      def initialize(name, options={})
         unless BUILT_INS.include?(name)
           raise Prawn::Errors::UnknownFont, "#{name} is not a known font."
         end
@@ -94,8 +94,8 @@ module Prawn
 
       private
 
-      def register(subset)
-        @document.ref!(:Type     => :Font,
+      def register(document, subset)
+        document.ref!(:Type     => :Font,
                       :Subtype  => :Type1,
                       :BaseFont => name.to_sym,
                       :Encoding => :WinAnsiEncoding)

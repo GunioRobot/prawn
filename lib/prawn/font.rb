@@ -35,11 +35,11 @@ module Prawn
 
       if block_given?
         save_font do
-          set_font(new_font, options[:size])
+          set_font(new_font, options[:size] || 12)
           yield
         end
       else
-        set_font(new_font, options[:size])
+        set_font(new_font, options[:size] || 12)
       end
 
       @font
@@ -69,11 +69,17 @@ module Prawn
     # size.
     #
     def font_size(points=nil)
-      return @font_size unless points
-      size_before_yield = @font_size
-      @font_size = points
+      return font.size unless points
+      size_before_yield = font.size
+      font.size = points
       block_given? ? yield : return
-      @font_size = size_before_yield
+      font.size = size_before_yield
+    end
+
+    # Set the font size in accessor form
+    #
+    def font_size=(points)
+      font.size = points
     end
 
     # Sets the font directly, given an actual Font object
@@ -81,7 +87,7 @@ module Prawn
     #
     def set_font(font, size=nil) # :nodoc:
       @font = font
-      @font_size = size if size
+      font.size = size if size
     end
 
     # Saves the current font, and then yields. When the block
@@ -90,7 +96,7 @@ module Prawn
     def save_font
       @font ||= find_font("Helvetica")
       original_font = @font
-      original_size = @font_size
+      original_size = font.size
 
       yield
     ensure
@@ -132,6 +138,12 @@ module Prawn
     #
     def font_registry #:nodoc:
       @font_registry ||= {}
+    end
+
+    # Identifier of the next entry in the font registry
+    #
+    def next_font_registry_identifier #:nodoc:
+      :"F#{@font_registry.size + 1}"
     end
 
     # Hash that maps font family names to their styled individual font names
@@ -210,23 +222,29 @@ module Prawn
     # The options hash used to initialize the font
     attr_reader :options
 
-    def self.load(document,name,options={})
+    # Current font size
+    attr_accessor :size
+
+    def self.load(document, name, options={})
+      options[:identifier] = document.next_font_registry_identifier
+      options[:size] ||= 12
+
       case name
-      when /\.ttf$/   then TTF.new(document, name, options)
-      when /\.dfont$/ then DFont.new(document, name, options)
-      when /\.afm$/   then AFM.new(document, name, options)
-      else                 AFM.new(document, name, options)
+      when /\.ttf$/   then TTF.new(name, options)
+      when /\.dfont$/ then DFont.new(name, options)
+      when /\.afm$/   then AFM.new(name, options)
+      else                 AFM.new(name, options)
       end
     end
 
-    def initialize(document,name,options={}) #:nodoc:
-      @document   = document
+    def initialize(name,options={}) #:nodoc:
       @name       = name
       @options    = options
 
       @family     = options[:family]
+      @size       = options[:size]
 
-      @identifier = :"F#{@document.font_registry.size + 1}"
+      @identifier = options[:identifier]
 
       @references = {}
     end
@@ -280,15 +298,9 @@ module Prawn
     # page. This is safe to call multiple times for a given font and subset,
     # as it will only add the font the first time it is called.
     #
-    def add_to_current_page(subset)
-      @references[subset] ||= register(subset)
-      @document.page_fonts.merge!(identifier_for(subset) => @references[subset])
-    end
-
-    private
-
-    def size
-      @document.font_size
+    def add_to_current_page(document, subset)
+      @references[subset] ||= register(document, subset)
+      document.page_fonts.merge!(identifier_for(subset) => @references[subset])
     end
 
   end

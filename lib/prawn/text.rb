@@ -240,7 +240,7 @@ module Prawn
       end
 
       chunks.each do |(subset, string)|
-        font.add_to_current_page(subset)
+        font.add_to_current_page(self, subset)
         add_content "/#{font.identifier_for(subset)} #{font_size} Tf"
 
         operation = options[:kerning] && string.is_a?(Array) ? "TJ" : "Tj"
