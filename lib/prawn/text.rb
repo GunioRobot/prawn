@@ -257,6 +257,7 @@ module Prawn
     # any text
     #
     def height_of(string, options={})
+      options = options.dup
       if options[:indent_paragraphs]
         raise NotImplementedError, ":indent_paragraphs option not available" +
           "with height_of"
@@ -283,6 +284,7 @@ module Prawn
     #                          :style => [:bold, :italic] }])
     #
     def height_of_formatted(array, options={})
+      options = options.dup
       if options[:indent_paragraphs]
         raise NotImplementedError, ":indent_paragraphs option not available" +
           "with height_of"
@@ -316,6 +318,7 @@ module Prawn
     end
 
     def fill_text_box(text, options)
+      options = options.dup
       bottom = @bounding_box.stretchy? ? @margin_box.absolute_bottom :
                                          @bounding_box.absolute_bottom
 
