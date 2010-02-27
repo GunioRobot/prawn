@@ -4,13 +4,15 @@ require "prawn"
 require "benchmark"
 
 Prawn::Document.generate("the_prince.pdf", :compress => true) do
+  # Open-source font courtesy of: http://www.theleagueofmoveabletype.com/
   font_families.update(
     "GoudyBookletter1911" => {
       :normal => "#{Prawn::BASEDIR}/data/fonts/GoudyBookletter1911.ttf"
     })
   font "GoudyBookletter1911"
 
-  # Draws a section heading, 
+  # Draws a section heading, centered in 80% of the current column's width.
+  #
   def heading(heading_text)
     move_down 6 unless (y - bounds.absolute_top).abs < 1
 
@@ -26,11 +28,15 @@ Prawn::Document.generate("the_prince.pdf", :compress => true) do
     move_down 6
   end
 
+  # Draws a justified paragraph the width of the current column, using
+  # Knuth-Plass hyphenation from Crawdad.
+  #
   def paragraph(paragraph_text)
     text(paragraph_text, :text_box_class => Prawn::Text::KnuthPlassBox)
     move_down 6
   end
 
+  # Title page
   move_down 240
   text "The Prince", :size => 72, :align => :center
   text "Niccolò Machiavelli", :size => 36, :align => :center
