@@ -3,13 +3,14 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require "prawn"        
 require "benchmark"
 
-Prawn::Document.generate("the_prince.pdf") do
+Prawn::Document.generate("the_prince.pdf", :compress => true) do
   font_families.update(
     "GoudyBookletter1911" => {
       :normal => "#{Prawn::BASEDIR}/data/fonts/GoudyBookletter1911.ttf"
     })
   font "GoudyBookletter1911"
 
+  # Draws a section heading, 
   def heading(heading_text)
     move_down 6 unless (y - bounds.absolute_top).abs < 1
 
@@ -52,7 +53,13 @@ Prawn::Document.generate("the_prince.pdf") do
     end
   end
 
-  # TODO: number pages
+  repeat(:all, :dynamic => true) do
+    if page_number > 1
+      canvas do
+        text_box "—#{page_number}—", :at => [0, 28], :align => :center
+      end
+    end
+  end
 
 end
 
