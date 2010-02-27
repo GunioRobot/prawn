@@ -4,3 +4,6 @@
 [submodule "vendor/ttfunk"]
 	path = vendor/ttfunk
 	url = git://github.com/sandal/ttfunk.git
+[submodule "vendor/crawdad"]
+	path = vendor/crawdad
+	url = git://github.com/madriska/crawdad.git

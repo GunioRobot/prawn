@@ -245,6 +245,7 @@ module Prawn
       # outside of Text::Box or its descendants.
       #
       def _render(text) # :nodoc:
+        puts "Rendering #{text}"
         @text = nil
         remaining_text = text
         @line_height = @document.font.height

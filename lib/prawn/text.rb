@@ -8,6 +8,7 @@
 
 require "prawn/core/text"
 require "prawn/text/box"
+require "prawn/text/knuth_plass_box"
 require "prawn/text/formatted"
 require "zlib"
 
@@ -104,6 +105,9 @@ module Prawn
     #                       each line is included below the last line;
     #                       otherwise, document.y is placed just below the
     #                       descender of the last line printed [true]
+    # <tt>:text_box_class</tt>:: <tt>Class</tt>. A subclass of Prawn::Text::Box
+    #                            or Prawn::Text::Formatted::Box used to draw
+    #                            text boxes.
     #
     # <tt>:unformatted_line_wrap</tt>:: <tt>object</tt>. An object used for
     #                                   custom line wrapping on a case by case
@@ -258,9 +262,9 @@ module Prawn
           "with height_of"
       end
       process_final_gap_option(options)
-      box = Text::Box.new(string,
-                          options.merge(:height   => 100000000,
-                                        :document => self))
+      klass = options.delete(:text_box_class) || Text::Box
+      box = klass.new(string, options.merge(:height   => 100000000,
+                                            :document => self))
       printed = box.render(:dry_run => true)
 
       height = box.height - (box.line_height - box.ascender)
@@ -284,9 +288,9 @@ module Prawn
           "with height_of"
       end
       process_final_gap_option(options)
-      box = Text::Formatted::Box.new(array,
-                          options.merge(:height   => 100000000,
-                                        :document => self))
+      klass = options.delete(:text_box_class) || Text::Formatted::Box
+      box = klass.new(array, options.merge(:height   => 100000000,
+                                           :document => self))
       printed = box.render(:dry_run => true)
 
       height = box.height - (box.line_height - box.ascender)
@@ -322,11 +326,13 @@ module Prawn
 
       if @inline_format
         array = Text::Formatted::Parser.to_array(text)
-        box = Text::Formatted::Box.new(array, options)
+        klass = options.delete(:text_box_class) || Text::Formatted::Box
+        box = klass.new(array, options)
         array = box.render
         remaining_text = Text::Formatted::Parser.to_string(array)
       else
-        box = Text::Box.new(text, options)
+        klass = options.delete(:text_box_class) || Text::Box
+        box = klass.new(text, options)
         remaining_text = box.render
       end
 

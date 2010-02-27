@@ -7,7 +7,7 @@
 
 require "set"
 
-%w[ttfunk/lib].each do |dep|
+%w[ttfunk/lib crawdad/lib].each do |dep|
   $LOAD_PATH.unshift(File.dirname(__FILE__) + "/../../vendor/#{dep}")
 end
 
