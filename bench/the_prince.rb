@@ -52,5 +52,7 @@ Prawn::Document.generate("the_prince.pdf") do
     end
   end
 
+  # TODO: number pages
+
 end
 

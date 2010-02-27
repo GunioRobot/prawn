@@ -17,6 +17,8 @@ module Prawn
                  # TODO: line_widths
                  Crawdad::Paragraph.new(stream, :width => @width)
                else
+                 # We are rendering a continuation paragraph, and +text+ is a
+                 # token stream previously returned by _render.
                  Crawdad::Paragraph.new(text, :width => @width)
                end
 
@@ -30,16 +32,16 @@ module Prawn
         
         lines.each_with_index do |(tokens, breakpoint), i|
           if @baseline_y.abs + @descender > @height
-            puts "  [R] #{lines[i..-1].map{|(line, _)| line.grep(Crawdad::Box).map{|t| t.content}.join(" ")}.join(" ")}"
-            # Return the remaining tokens we weren't able to put on the page.
-            return lines[i..-1].inject([]) { |ts, (line, _)| 
+            remaining_tokens = lines[i..-1].inject([]) { |ts, (line, _)| 
               ts.concat(line); ts }
+            remaining_tokens.shift until remaining_tokens.empty? || 
+              Crawdad::Box === remaining_tokens.first
+
+            return remaining_tokens
           end
 
           # skip over glue and penalties at the beginning of each line
           tokens.shift until tokens.empty? || Crawdad::Box === tokens.first
-
-          puts tokens.grep(Crawdad::Box).map{|t| t.content}.join(" ")
 
           x = @at[0]
           y = @at[1] + @baseline_y
