@@ -7,13 +7,14 @@ module Prawn
       def initialize(text, options={})
         super
         @tokenizer = Crawdad::PrawnTokenizer.new(@document)
+        @tokenizer_options = options[:tokenizer_options]
       end
 
       def _render(text) # :nodoc:
         @text = text
         para = if text.is_a?(String)
                  # TODO: tokenizer options
-                 stream = @tokenizer.paragraph(text)
+                 stream = @tokenizer.paragraph(text, @tokenizer_options)
                  # TODO: line_widths
                  Crawdad::Paragraph.new(stream, :width => @width)
                else
@@ -28,7 +29,7 @@ module Prawn
         @baseline_y  = -@ascender
 
         # TODO: tolerance.
-        lines = para.lines(tolerance=10)
+        lines = para.lines
         
         lines.each_with_index do |(tokens, breakpoint), i|
           if @baseline_y.abs + @descender > @height
@@ -46,7 +47,7 @@ module Prawn
           x = @at[0]
           y = @at[1] + @baseline_y
 
-          tokens.each do |token|
+          tokens.each_with_index do |token, i|
             case token
             when Crawdad::Box
               @document.draw_text!(token.content, :at => [x, y])
@@ -62,7 +63,14 @@ module Prawn
                    end
               x += w
             when Crawdad::Penalty
-              # TODO: add a hyphen when we break at a flagged penalty
+              # Draw a hyphen when we have broken at a nonzero-width flagged
+              # penalty.
+              #
+              # XXX: We could make penalties carry their own content, too, to
+              # be super-fancy (support different types of hyphens, etc.).
+              if (i == tokens.length - 1) && token.flagged? && token.width > 0
+                @document.draw_text!('-', :at => [x, y])
+              end
             end
           end
 

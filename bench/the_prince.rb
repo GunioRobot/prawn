@@ -32,7 +32,8 @@ Prawn::Document.generate("the_prince.pdf", :compress => true) do
   # Knuth-Plass hyphenation from Crawdad.
   #
   def paragraph(paragraph_text)
-    text(paragraph_text, :text_box_class => Prawn::Text::KnuthPlassBox)
+    text(paragraph_text, :text_box_class => Prawn::Text::KnuthPlassBox,
+         :tokenizer_options => { :hyphenation => true })
     move_down 6
   end
 
