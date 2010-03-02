@@ -4,6 +4,9 @@ module Prawn
   module Text
     class KnuthPlassBox < Box
 
+      # token helper functions
+      include Crawdad::Tokens
+
       def initialize(text, options={})
         super
         @tokenizer = Crawdad::PrawnTokenizer.new(@document)
@@ -36,39 +39,40 @@ module Prawn
             remaining_tokens = lines[i..-1].inject([]) { |ts, (line, _)| 
               ts.concat(line); ts }
             remaining_tokens.shift until remaining_tokens.empty? || 
-              Crawdad::Box === remaining_tokens.first
+              remaining_tokens.first[0] == :box
 
             return remaining_tokens
           end
 
           # skip over glue and penalties at the beginning of each line
-          tokens.shift until tokens.empty? || Crawdad::Box === tokens.first
+          tokens.shift until tokens.empty? || tokens.first[0] == :box
 
           x = @at[0]
           y = @at[1] + @baseline_y
 
           tokens.each_with_index do |token, i|
-            case token
-            when Crawdad::Box
-              @document.draw_text!(token.content, :at => [x, y])
-              x += token.width
-            when Crawdad::Glue
+            case token[0]
+            when :box
+              @document.draw_text!(box_content(token), :at => [x, y])
+              x += token_width(token)
+            when :glue
               r = breakpoint.ratio
               w = case
                    when r > 0
-                     token.width + (r * token.stretch)
+                     token_width(token) + (r * glue_stretch(token))
                    when r < 0
-                     token.width + (r * token.shrink)
-                   else token.width
+                     token_width(token) + (r * glue_shrink(token))
+                   else token_width(token)
                    end
               x += w
-            when Crawdad::Penalty
+            when :penalty
               # Draw a hyphen when we have broken at a nonzero-width flagged
               # penalty.
               #
               # XXX: We could make penalties carry their own content, too, to
               # be super-fancy (support different types of hyphens, etc.).
-              if (i == tokens.length - 1) && token.flagged? && token.width > 0
+              if (i == tokens.length - 1) && penalty_flagged?(token) && 
+                  token_width(token) > 0
                 @document.draw_text!('-', :at => [x, y])
               end
             end
