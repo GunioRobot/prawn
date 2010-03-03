@@ -53,7 +53,6 @@ module Prawn
           tokens.each_with_index do |token, i|
             case token_type(token)
             when :box
-              puts "Drawing #{box_content(token)}"
               @document.draw_text!(box_content(token), :at => [x, y])
               x += token_width(token)
             when :glue
