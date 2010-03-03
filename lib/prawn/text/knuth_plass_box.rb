@@ -39,20 +39,21 @@ module Prawn
             remaining_tokens = lines[i..-1].inject([]) { |ts, (line, _)| 
               ts.concat(line); ts }
             remaining_tokens.shift until remaining_tokens.empty? || 
-              remaining_tokens.first[0] == :box
+              token_type(remaining_tokens.first) == :box
 
             return remaining_tokens
           end
 
           # skip over glue and penalties at the beginning of each line
-          tokens.shift until tokens.empty? || tokens.first[0] == :box
+          tokens.shift until tokens.empty? || token_type(tokens.first) == :box
 
           x = @at[0]
           y = @at[1] + @baseline_y
 
           tokens.each_with_index do |token, i|
-            case token[0]
+            case token_type(token)
             when :box
+              puts "Drawing #{box_content(token)}"
               @document.draw_text!(box_content(token), :at => [x, y])
               x += token_width(token)
             when :glue

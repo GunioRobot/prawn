@@ -105,9 +105,15 @@ module Prawn
     #                       each line is included below the last line;
     #                       otherwise, document.y is placed just below the
     #                       descender of the last line printed [true]
-    # <tt>:text_box_class</tt>:: <tt>Class</tt>. A subclass of Prawn::Text::Box
-    #                            or Prawn::Text::Formatted::Box used to draw
-    #                            text boxes.
+    # <tt>:line_break_method</tt>:: 
+    #   <tt>Symbol</tt>. Indicates a subclass of Prawn::Text::Box or
+    #   Prawn::Text::Formatted::Box used to draw text boxes. :KnuthPlass would
+    #   indicate Prawn::Text::KnuthPlassBox or
+    #   Prawn::Text::Formatted::KnuthPlassBox. Defaults to a standard Box.
+    # <tt>:line_break_options</tt>::
+    #   <tt>Options to be used for line breaking. Dependent on the
+    #   :line_break_method -- see the docs on Prawn::Text::Box and its
+    #   subclasses for options.</tt>
     #
     # <tt>:unformatted_line_wrap</tt>:: <tt>object</tt>. An object used for
     #                                   custom line wrapping on a case by case
@@ -263,7 +269,7 @@ module Prawn
           "with height_of"
       end
       process_final_gap_option(options)
-      klass = options.delete(:text_box_class) || Text::Box
+      klass = text_box_class(Text, options.delete(:line_break_method))
       box = klass.new(string, options.merge(:height   => 100000000,
                                             :document => self))
       printed = box.render(:dry_run => true)
@@ -290,7 +296,7 @@ module Prawn
           "with height_of"
       end
       process_final_gap_option(options)
-      klass = options.delete(:text_box_class) || Text::Formatted::Box
+      klass = text_box_class(Text::Formatted, options.delete(:line_break_method))
       box = klass.new(array, options.merge(:height   => 100000000,
                                            :document => self))
       printed = box.render(:dry_run => true)
@@ -301,6 +307,10 @@ module Prawn
     end
 
     private
+
+    def text_box_class(base, method)
+      base.const_get("#{method}Box")
+    end
 
     def draw_remaining_text_on_new_pages(remaining_text, options)
       while remaining_text.length > 0
@@ -329,12 +339,12 @@ module Prawn
 
       if @inline_format
         array = Text::Formatted::Parser.to_array(text)
-        klass = options.delete(:text_box_class) || Text::Formatted::Box
+        klass = text_box_class(Text::Formatted, options.delete(:line_break_method))
         box = klass.new(array, options)
         array = box.render
         remaining_text = Text::Formatted::Parser.to_string(array)
       else
-        klass = options.delete(:text_box_class) || Text::Box
+        klass = text_box_class(Text, options.delete(:line_break_method))
         box = klass.new(text, options)
         remaining_text = box.render
       end
