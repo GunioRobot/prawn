@@ -7,8 +7,8 @@
 # This is free software. Please see the LICENSE and COPYING files for details.
 
 require "prawn/core/text"
+require "prawn/core/text/line_wrap"
 require "prawn/text/box"
-require "prawn/text/knuth_plass_box"
 require "prawn/text/formatted"
 require "zlib"
 
@@ -67,25 +67,32 @@ module Prawn
     #      as a HTML-esque string that recognizes the following tags:
     #      <tt>\<b></b></tt>:: bold
     #      <tt>\<i></i></tt>:: italic
-    #      <tt>\<font></font></tt>::
-    #          with the following attributes
-    #            <tt>size="24" or size='24'</tt>::
-    #                attribute for setting size
-    #            <tt>name="Helvetica" or name='Helvetica'</tt>::
-    #                attribute for setting the font. The font name must be an
-    #                AFM font with the desired faces or must be a font that is
-    #                registered using #font_families (not yet implemented)
-    #
-    #      Planned, but as yet unsupported tags are:
-    #
     #      <tt>\<u></u></tt>:: underline
     #      <tt>\<strikethrough></strikethrough></tt>:: strikethrough
+    #      <tt>\<sub></sub></tt>:: subscript
+    #      <tt>\<sup></sup></tt>:: superscript
+    #      <tt>\<font></font></tt>::
+    #          with the following attributes (using double or single quotes)
+    #            <tt>size="24"</tt>::
+    #                attribute for setting size
+    #            <tt>name="Helvetica"</tt>::
+    #                attribute for setting the font. The font name must be an
+    #                AFM font with the desired faces or must be a font that is
+    #                already registered using Prawn::Document#font_families
     #      <tt>\<color></color></tt>::
     #          with the following attributes
-    #            <tt>r="255" g="255" b="255" or r='255' g='255' b='255'</tt>::
-    #            <tt>rgb="#ffffff" or rgb='#ffffff'</tt>::
-    #            <tt>c="100" m="100" y="100" k="100" or c="100" m="100" y="100" k="100"</tt>::
-    #
+    #            <tt>rgb="ffffff" or rgb="#ffffff"</tt>::
+    #            <tt>c="100" m="100" y="100" k="100"</tt>::
+    #      <tt>\<link></link></tt>::
+    #          with the following attributes
+    #            <tt>href="http://example.com"</tt>:: an external link
+    #            <tt>anchor="ToC"</tt>::
+    #                where the value of the anchor attribute is the name of a
+    #                destination that has already been or will be registered
+    #                using Prawn::Core::Destinations#add_dest. A clickable link
+    #                will be created to that destination. 
+    #          Note that you must explicitly underline and color using the
+    #          appropriate tags if you which to draw attention to the link
     #
     # <tt>:kerning</tt>:: <tt>boolean</tt>. Whether or not to use kerning (if it
     #                     is available with the current font) [true]
@@ -105,15 +112,6 @@ module Prawn
     #                       each line is included below the last line;
     #                       otherwise, document.y is placed just below the
     #                       descender of the last line printed [true]
-    # <tt>:line_break_method</tt>:: 
-    #   <tt>Symbol</tt>. Indicates a subclass of Prawn::Text::Box or
-    #   Prawn::Text::Formatted::Box used to draw text boxes. :KnuthPlass would
-    #   indicate Prawn::Text::KnuthPlassBox or
-    #   Prawn::Text::Formatted::KnuthPlassBox. Defaults to a standard Box.
-    # <tt>:line_break_options</tt>::
-    #   <tt>Options to be used for line breaking. Dependent on the
-    #   :line_break_method -- see the docs on Prawn::Text::Box and its
-    #   subclasses for options.</tt>
     #
     # <tt>:unformatted_line_wrap</tt>:: <tt>object</tt>. An object used for
     #                                   custom line wrapping on a case by case
@@ -129,6 +127,14 @@ module Prawn
     def text(string, options={})
       # we modify the options. don't change the user's hash
       options = options.dup
+
+      if options[:inline_format]
+        options.delete(:inline_format)
+        array = Text::Formatted::Parser.to_array(string)
+        formatted_text(array, options)
+        return
+      end
+
       inspect_options_for_text(options)
 
       if @indent_paragraphs
@@ -177,8 +183,29 @@ module Prawn
     # Same as for #text
     #
     def formatted_text(array, options={})
-      html_string = Text::Formatted::Parser.to_string(array)
-      text(html_string, options)
+      # we modify the options. don't change the user's hash
+      options = options.dup
+
+      inspect_options_for_text(options)
+
+      if @indent_paragraphs
+        Text::Formatted::Parser.array_paragraphs(array).each do |paragraph|
+          options[:skip_encoding] = false
+          remaining_text = draw_indented_formatted_line(paragraph, options)
+          options[:skip_encoding] = true
+          if remaining_text == paragraph
+            # we were too close to the bottom of the page to print even one line
+            @bounding_box.move_past_bottom
+            remaining_text = draw_indented_formatted_line(paragraph, options)
+          end
+          remaining_text = fill_formatted_text_box(remaining_text, options)
+          draw_remaining_formatted_text_on_new_pages(remaining_text, options)
+        end
+      else
+        remaining_text = fill_formatted_text_box(array, options)
+        options[:skip_encoding] = true
+        draw_remaining_formatted_text_on_new_pages(remaining_text, options)
+      end
     end
 
     # Draws text on the page, beginning at the point specified by the :at option
@@ -263,15 +290,14 @@ module Prawn
     # any text
     #
     def height_of(string, options={})
-      options = options.dup
       if options[:indent_paragraphs]
         raise NotImplementedError, ":indent_paragraphs option not available" +
           "with height_of"
       end
       process_final_gap_option(options)
-      klass = text_box_class(Text, options.delete(:line_break_method))
-      box = klass.new(string, options.merge(:height   => 100000000,
-                                            :document => self))
+      box = Text::Box.new(string,
+                          options.merge(:height   => 100000000,
+                                        :document => self))
       printed = box.render(:dry_run => true)
 
       height = box.height - (box.line_height - box.ascender)
@@ -290,15 +316,14 @@ module Prawn
     #                          :style => [:bold, :italic] }])
     #
     def height_of_formatted(array, options={})
-      options = options.dup
       if options[:indent_paragraphs]
         raise NotImplementedError, ":indent_paragraphs option not available" +
           "with height_of"
       end
       process_final_gap_option(options)
-      klass = text_box_class(Text::Formatted, options.delete(:line_break_method))
-      box = klass.new(array, options.merge(:height   => 100000000,
-                                           :document => self))
+      box = Text::Formatted::Box.new(array,
+                          options.merge(:height   => 100000000,
+                                        :document => self))
       printed = box.render(:dry_run => true)
 
       height = box.height - (box.line_height - box.ascender)
@@ -307,10 +332,6 @@ module Prawn
     end
 
     private
-
-    def text_box_class(base, method)
-      base.const_get("#{method}Box")
-    end
 
     def draw_remaining_text_on_new_pages(remaining_text, options)
       while remaining_text.length > 0
@@ -328,7 +349,51 @@ module Prawn
     end
 
     def fill_text_box(text, options)
-      options = options.dup
+      merge_text_box_positioning_options(options)
+
+      box = Text::Box.new(text, options)
+      remaining_text = box.render
+
+      self.y -= box.height - (box.line_height - box.ascender)
+      if @final_gap
+        self.y -= box.line_height + box.leading - box.ascender
+      end
+      remaining_text
+    end
+
+
+
+
+    def draw_remaining_formatted_text_on_new_pages(remaining_text, options)
+      while remaining_text.length > 0
+        @bounding_box.move_past_bottom
+        previous_remaining_text = remaining_text
+        remaining_text = fill_formatted_text_box(remaining_text, options)
+        break if remaining_text == previous_remaining_text
+      end
+    end
+
+    def draw_indented_formatted_line(string, options)
+      indent(@indent_paragraphs) do
+        fill_formatted_text_box(string, options.dup.merge(:single_line => true))
+      end
+    end
+
+    def fill_formatted_text_box(text, options)
+      merge_text_box_positioning_options(options)
+      box = Text::Formatted::Box.new(text, options)
+      remaining_text = box.render
+
+      self.y -= box.height - (box.line_height - box.ascender)
+      if @final_gap
+        self.y -= box.line_height + box.leading - box.ascender
+      end
+      remaining_text
+    end
+
+
+
+    def merge_text_box_positioning_options(options)
       bottom = @bounding_box.stretchy? ? @margin_box.absolute_bottom :
                                          @bounding_box.absolute_bottom
 
@@ -336,24 +401,6 @@ module Prawn
       options[:width] = bounds.width
       options[:at] = [@bounding_box.left_side - @bounding_box.absolute_left,
                       y - @bounding_box.absolute_bottom]
-
-      if @inline_format
-        array = Text::Formatted::Parser.to_array(text)
-        klass = text_box_class(Text::Formatted, options.delete(:line_break_method))
-        box = klass.new(array, options)
-        array = box.render
-        remaining_text = Text::Formatted::Parser.to_string(array)
-      else
-        klass = text_box_class(Text, options.delete(:line_break_method))
-        box = klass.new(text, options)
-        remaining_text = box.render
-      end
-
-      self.y -= box.height - (box.line_height - box.ascender)
-      if @final_gap
-        self.y -= box.line_height + box.leading - box.ascender
-      end
-      remaining_text
     end
 
     def inspect_options_for_draw_text(options)
@@ -373,7 +420,6 @@ module Prawn
       end
       process_final_gap_option(options)
       process_indent_paragraphs_option(options)
-      process_inline_format_option(options)
       options[:document] = self
     end
 
@@ -385,11 +431,6 @@ module Prawn
     def process_indent_paragraphs_option(options)
       @indent_paragraphs = options[:indent_paragraphs]
       options.delete(:indent_paragraphs)
-    end
-
-    def process_inline_format_option(options)
-      @inline_format = options[:inline_format]
-      options.delete(:inline_format)
     end
 
     def move_text_position(dy)
