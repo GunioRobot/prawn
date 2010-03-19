@@ -9,6 +9,7 @@
 require "prawn/core/text"
 require "prawn/core/text/line_wrap"
 require "prawn/text/box"
+require "prawn/text/knuth_plass_box"
 require "prawn/text/formatted"
 require "zlib"
 
@@ -290,14 +291,16 @@ module Prawn
     # any text
     #
     def height_of(string, options={})
+      options = options.dup
       if options[:indent_paragraphs]
         raise NotImplementedError, ":indent_paragraphs option not available" +
           "with height_of"
       end
       process_final_gap_option(options)
-      box = Text::Box.new(string,
-                          options.merge(:height   => 100000000,
-                                        :document => self))
+      klass = text_box_class(Text, options.delete(:line_break_method))
+      box = klass.new(string,
+                      options.merge(:height   => 100000000,
+                                    :document => self))
       printed = box.render(:dry_run => true)
 
       height = box.height - (box.line_height - box.ascender)
@@ -316,14 +319,16 @@ module Prawn
     #                          :style => [:bold, :italic] }])
     #
     def height_of_formatted(array, options={})
+      options = options.dup
       if options[:indent_paragraphs]
         raise NotImplementedError, ":indent_paragraphs option not available" +
           "with height_of"
       end
       process_final_gap_option(options)
-      box = Text::Formatted::Box.new(array,
-                          options.merge(:height   => 100000000,
-                                        :document => self))
+      klass = text_box_class(Text::Formatted, 
+                             options.delete(:line_break_method))
+      box = klass.new(array, options.merge(:height   => 100000000,
+                                           :document => self))
       printed = box.render(:dry_run => true)
 
       height = box.height - (box.line_height - box.ascender)
@@ -332,6 +337,10 @@ module Prawn
     end
 
     private
+
+    def text_box_class(base, method)
+      base.const_get("#{method}Box")
+    end
 
     def draw_remaining_text_on_new_pages(remaining_text, options)
       while remaining_text.length > 0
@@ -349,9 +358,11 @@ module Prawn
     end
 
     def fill_text_box(text, options)
+      options = options.dup
       merge_text_box_positioning_options(options)
 
-      box = Text::Box.new(text, options)
+      klass = text_box_class(Text, options.delete(:line_break_method))
+      box = klass.new(text, options)
       remaining_text = box.render
 
       self.y -= box.height - (box.line_height - box.ascender)
@@ -380,8 +391,11 @@ module Prawn
     end
 
     def fill_formatted_text_box(text, options)
+      options = options.dup
       merge_text_box_positioning_options(options)
-      box = Text::Formatted::Box.new(text, options)
+      klass = text_box_class(Text::Formatted, 
+                             options.delete(:line_break_method))
+      box = klass.new(text, options)
       remaining_text = box.render
 
       self.y -= box.height - (box.line_height - box.ascender)
