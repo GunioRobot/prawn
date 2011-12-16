@@ -3,7 +3,7 @@
 # As of f952055d03f9b21b78ec2844bd873cf62005d00a
 # Transactions fail when using TTF fonts.
 #
-# This is because we use an on_encode Proc that gets included in the 
+# This is because we use an on_encode Proc that gets included in the
 # @current_page object, which breaks snapshots.  We can surely write
 # around this to either split out the Proc into non-marshalled data
 # or set up some sort of callback that is indicated by something that
@@ -15,7 +15,7 @@
 # Resolved in 36ef89c2bc21e504df623f61d918c5bfdc1fdab1.
 
 $LOAD_PATH << File.join(File.dirname(__FILE__), '..', '..','lib')
-require 'prawn/core' 
+require 'prawn/core'
 
 Prawn::Document.generate("err.pdf") do
   font "#{Prawn::DATADIR}/fonts/DejaVuSans.ttf"

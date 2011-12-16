@@ -2,8 +2,8 @@
 
 require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper")
 
-describe "drawing span" do    
-  
+describe "drawing span" do
+
   def setup
     Prawn.debug = false
     create_pdf
@@ -28,9 +28,9 @@ describe "drawing span" do
     @pdf.span(350, :position => :center) do
       @pdf.text "Here's some centered text in a 350 point column. " * 100
     end
-    
+
     @pdf.bounds.should == margin_box
-    
+
   end
 
   it "should do create a margin box" do
@@ -38,12 +38,12 @@ describe "drawing span" do
     margin_box = @pdf.span(350, :position => :center) do
       @pdf.text "Here's some centered text in a 350 point column. " * 100
     end
-    
+
     margin_box.top.should == 792.0
-    margin_box.bottom.should == 0    
-    
-  end  
-  
+    margin_box.bottom.should == 0
+
+  end
+
 end
 
-  
+

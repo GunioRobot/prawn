@@ -205,19 +205,19 @@ module Prawn
             kerned << -k << [byte]
           else
             kerned.last << byte
-          end         
+          end
           last_byte = byte
         end
 
-        kerned.map { |e| 
+        kerned.map { |e|
           e = (Array === e ? e.pack("C*") : e)
-          e.respond_to?(:force_encoding) ? e.force_encoding("Windows-1252") : e  
+          e.respond_to?(:force_encoding) ? e.force_encoding("Windows-1252") : e
         }
       end
 
       def latin_kern_pairs_table
         return @kern_pairs_table if defined?(@kern_pairs_table)
-        
+
         character_hash = Hash[Encoding::WinAnsi::CHARACTERS.zip((0..Encoding::WinAnsi::CHARACTERS.size).to_a)]
         @kern_pairs_table = @kern_pairs.inject({}) do |h,p|
           h[p[0].map { |n| character_hash[n] }] = p[1]
@@ -230,12 +230,12 @@ module Prawn
           @glyph_widths[Encoding::WinAnsi::CHARACTERS[i]].to_i
         end
       end
-      
+
       private
-      
+
       def unscaled_width_of(string)
         glyph_table = latin_glyphs_table
-        
+
         string.unpack("C*").inject(0) do |s,r|
           s + glyph_table[r]
         end

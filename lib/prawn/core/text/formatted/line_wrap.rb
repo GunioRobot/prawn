@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-# core/text/formatted/line_wrap.rb : Implements individual line wrapping of 
+# core/text/formatted/line_wrap.rb : Implements individual line wrapping of
 #                                    formatted text
 #
 # Copyright February 2010, Daniel Nelson. All Rights Reserved.
@@ -12,7 +12,7 @@ module Prawn
   module Core
     module Text
       module Formatted #:nodoc:
-        
+
         class LineWrap #:nodoc:
 
           # The width of the last wrapped line

@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Prawn manual foreword page. 
+# Prawn manual foreword page.
 #
 require File.expand_path(File.join(File.dirname(__FILE__),
                                    %w[.. example_helper]))

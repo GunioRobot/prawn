@@ -139,7 +139,7 @@ module Prawn
         # Example (see Prawn::Text::Core::Formatted::Wrap for what is required
         # of the wrap method if you want to override the default wrapping
         # algorithm):
-        # 
+        #
         #
         #   module MyWrap
         #
@@ -273,7 +273,7 @@ module Prawn
         end
 
         # The height actually used during the previous <tt>render</tt>
-        # 
+        #
         def height
           return 0 if @baseline_y.nil? || @descender.nil?
           (@baseline_y - @descender).abs
@@ -540,7 +540,7 @@ module Prawn
           if underline
             @document.stroke_line(fragment.underline_points)
           end
-          
+
           strikethrough = fragment.styles.include?(:strikethrough)
           if strikethrough
             @document.stroke_line(fragment.strikethrough_points)

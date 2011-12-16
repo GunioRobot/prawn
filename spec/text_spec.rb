@@ -256,7 +256,7 @@ describe "#text" do
   it "should raise an exception when an unknown font is used" do
     lambda { @pdf.font "Pao bu" }.should.raise(Prawn::Errors::UnknownFont)
   end
-  
+
   it "should not raise an exception when providing Pathname instance as font" do
     lambda {
       @pdf.font Pathname.new("#{Prawn::DATADIR}/fonts/comicsans.ttf")

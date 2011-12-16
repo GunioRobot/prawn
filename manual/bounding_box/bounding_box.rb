@@ -19,10 +19,10 @@ Prawn::Example.generate("bounding_box.pdf") do
                     ]
       ]
     ]
-    
+
   ) do
     text "Bounding boxes are the basic containers for structuring the content flow. Even being low level building blocks sometimes their simplicity is very welcome.
-    
+
     The examples show:"
 
     list( "How to create bounding boxes with specific dimensions",

@@ -125,7 +125,7 @@ module Prawn
           fonts = []
           sizes = []
           character_spacings = []
-          
+
           while token = tokens.shift
             case token
             when "<b>", "<strong>"
@@ -179,7 +179,7 @@ module Prawn
                 # intend to support rgb="#ffffff" or rgb='#ffffff',
                 # r="255" g="255" b="255" or r='255' g='255' b='255',
                 # and c="100" m="100" y="100" k="100" or
-                # c='100' m='100' y='100' k='100' 
+                # c='100' m='100' y='100' k='100'
                 # color = { :rgb => "#ffffff" }
                 # color = { :r => 255, :g => 255, :b => 255 }
                 # color = { :c => 100, :m => 100, :y => 100, :k => 100 }

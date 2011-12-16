@@ -40,7 +40,7 @@ describe "Document built from a template" do
                                       :bottom => 36 }
 
 
- 
+
   end
 
   it "should not add an extra restore_graphics_state operator to the end of any content stream" do
@@ -57,7 +57,7 @@ describe "Document built from a template" do
       data.include?("QQ").should == false
     end
   end
-    
+
   it "should have a single page object if importing a single page template" do
     filename = "#{Prawn::DATADIR}/pdfs/hexagon.pdf"
 
@@ -166,19 +166,19 @@ end
 
 describe "Document#start_new_page with :template option" do
   filename = "#{Prawn::BASEDIR}/spec/data/curves.pdf"
-  
+
   it "should set the imported page's parent to the document pages catalog" do
     @pdf = Prawn::Document.new()
     @pdf.start_new_page(:template => filename)
     @pdf.state.page.dictionary.data[:Parent].should == @pdf.state.store.pages
   end
-  
+
   it "should set start the Y cursor at the top of the page" do
     @pdf = Prawn::Document.new()
     @pdf.start_new_page(:template => filename)
     (@pdf.y == nil).should == false
   end
-  
+
   it "should respect margins set by Prawn" do
     @pdf = Prawn::Document.new(:margin => 0)
     @pdf.start_new_page(:template => filename)
@@ -199,7 +199,7 @@ describe "Document#start_new_page with :template option" do
                                       :top    => 36,
                                       :bottom => 36 }
   end
-  
+
   it "should not add an extra restore_graphics_state operator to the end of any content stream" do
     @pdf = Prawn::Document.new
     @pdf.start_new_page(:template => filename)
@@ -213,7 +213,7 @@ describe "Document#start_new_page with :template option" do
       data.include?("QQ").should == false
     end
   end
-  
+
   it "should have two content streams if importing a single page template" do
     filename = "#{Prawn::DATADIR}/pdfs/hexagon.pdf"
     @pdf = Prawn::Document.new()
@@ -224,7 +224,7 @@ describe "Document#start_new_page with :template option" do
     template_page = hash[pages[1]]
     template_page[:Contents].size.should == 2
   end
-  
+
   it "should have balance q/Q operators on all content streams" do
     filename = "#{Prawn::DATADIR}/pdfs/hexagon.pdf"
 
@@ -241,7 +241,7 @@ describe "Document#start_new_page with :template option" do
       data.scan("Q").size.should == 1
     end
   end
-  
+
   it "should allow text to be added to a single page template" do
 
     @pdf = Prawn::Document.new()
@@ -252,7 +252,7 @@ describe "Document#start_new_page with :template option" do
     text = PDF::Inspector::Text.analyze(@pdf.render)
     text.strings.first.should == "Adding some text"
   end
-  
+
   it "should allow PDFs with page resources behind an indirect object to be used as templates" do
     filename = "#{Prawn::DATADIR}/pdfs/resources_as_indirect_object.pdf"
 
@@ -265,7 +265,7 @@ describe "Document#start_new_page with :template option" do
     all_text = text.strings.join
     all_text.include?("Adding some text").should == true
   end
-  
+
   it "should correctly add a TTF font to a template that has existing fonts" do
     filename = "#{Prawn::DATADIR}/pdfs/contains_ttf_font.pdf"
     @pdf = Prawn::Document.new()
@@ -283,7 +283,7 @@ describe "Document#start_new_page with :template option" do
     fonts = resources[:Font]
     fonts.size.should == 2
   end
-  
+
   context "using template_page option" do
     it "uses the specified page option" do
       filename = "#{Prawn::DATADIR}/pdfs/multipage_template.pdf"

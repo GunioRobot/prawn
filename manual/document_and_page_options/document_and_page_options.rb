@@ -12,7 +12,7 @@ Prawn::Example.generate("document_and_page_options.pdf") do
       {:name => "background",   :eval_source => false, :full_source => true},
       {:name => "metadata",     :eval_source => false, :full_source => true}
     ]
-    
+
   ) do
     text "So far we've already seen how to create new documents and start new pages. This chapter expands on the previous examples by showing the options avialable. Some of the options are only available when creating new documents.
 

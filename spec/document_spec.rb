@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "tempfile"
 
-require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper") 
+require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper")
 
 describe "Prawn::Document.new" do
   it "should not modify its argument" do
@@ -15,9 +15,9 @@ describe "The cursor" do
   it "should equal pdf.y - bounds.absolute_bottom" do
     pdf = Prawn::Document.new
     pdf.cursor.should == pdf.bounds.top
-    
+
     pdf.y = 300
-    pdf.cursor.should == pdf.y - pdf.bounds.absolute_bottom 
+    pdf.cursor.should == pdf.y - pdf.bounds.absolute_bottom
   end
 
   it "should be able to move relative to the bottom margin" do
@@ -27,12 +27,12 @@ describe "The cursor" do
     pdf.cursor.should == 10
     pdf.y.should == pdf.cursor + pdf.bounds.absolute_bottom
   end
-end 
+end
 
 describe "when generating a document from a subclass" do
   it "should be an instance of the subclass" do
     custom_document = Class.new(Prawn::Document)
-    custom_document.generate(Tempfile.new("generate_test").path) do |e| 
+    custom_document.generate(Tempfile.new("generate_test").path) do |e|
       e.class.should == custom_document
       e.should.be.kind_of(Prawn::Document)
     end
@@ -63,27 +63,27 @@ describe "when generating a document from a subclass" do
 
 end
 
-                               
-describe "When creating multi-page documents" do 
- 
+
+describe "When creating multi-page documents" do
+
   before(:each) { create_pdf }
-  
-  it "should initialize with a single page" do 
+
+  it "should initialize with a single page" do
     page_counter = PDF::Inspector::Page.analyze(@pdf.render)
-    
-    page_counter.pages.size.should == 1            
-    @pdf.page_count.should == 1  
+
+    page_counter.pages.size.should == 1
+    @pdf.page_count.should == 1
   end
-  
+
   it "should provide an accurate page_count" do
-    3.times { @pdf.start_new_page }           
+    3.times { @pdf.start_new_page }
     page_counter = PDF::Inspector::Page.analyze(@pdf.render)
-    
+
     page_counter.pages.size.should == 4
     @pdf.page_count.should == 4
-  end                 
-  
-end   
+  end
+
+end
 
 describe "When beginning each new page" do
 
@@ -102,11 +102,11 @@ describe "When beginning each new page" do
       @pdf.instance_variable_defined?(:@background).should == true
       @pdf.instance_variable_get(:@background).should == @filename
     end
-    
-    
+
+
   end
-  
-  
+
+
 end
 
 describe "Prawn::Document#float" do
@@ -119,7 +119,7 @@ describe "Prawn::Document#float" do
 
   it "should teleport across pages if necessary" do
     create_pdf
-    
+
     @pdf.float do
       @pdf.text "Foo"
       @pdf.start_new_page
@@ -156,7 +156,7 @@ end
 
 describe "on_page_create callback" do
   before do
-    create_pdf 
+    create_pdf
   end
 
   it "should be invoked with document" do
@@ -177,34 +177,34 @@ describe "on_page_create callback" do
 
     5.times { @pdf.start_new_page }
   end
-  
+
   it "should be replaceable" do
       trigger1 = mock()
       trigger1.expects(:fire).times(1)
-      
+
       trigger2 = mock()
       trigger2.expects(:fire).times(1)
 
       @pdf.on_page_create { trigger1.fire }
-      
+
       @pdf.start_new_page
-      
+
       @pdf.on_page_create { trigger2.fire }
-      
+
       @pdf.start_new_page
   end
-  
+
   it "should be clearable by calling on_page_create without a block" do
       trigger = mock()
       trigger.expects(:fire).times(1)
 
       @pdf.on_page_create { trigger.fire }
 
-      @pdf.start_new_page 
-      
+      @pdf.start_new_page
+
       @pdf.on_page_create
-      
-      @pdf.start_new_page 
+
+      @pdf.start_new_page
   end
 
 end
@@ -240,9 +240,9 @@ describe "Document compression" do
     end
 
     doc_compressed.render.length.should.be < doc_uncompressed.render.length
-  end 
+  end
 
-end                                 
+end
 
 describe "Document metadata" do
   it "should output strings as UTF-16 with a byte order mark" do
@@ -262,7 +262,7 @@ describe "When reopening pages" do
       pdf.go_to_page 1
       pdf.text "More for page 1"
     end
-    
+
     # MalformedPDFError raised if content stream actual length does not match
     # dictionary length
     lambda{ PDF::Inspector::Page.analyze(@pdf.render) }.
@@ -298,21 +298,21 @@ describe "When setting page size" do
   it "should default to LETTER" do
     @pdf = Prawn::Document.new
     pages = PDF::Inspector::Page.analyze(@pdf.render).pages
-    pages.first[:size].should == Prawn::Document::PageGeometry::SIZES["LETTER"]    
-  end                                                                  
-  
+    pages.first[:size].should == Prawn::Document::PageGeometry::SIZES["LETTER"]
+  end
+
   (Prawn::Document::PageGeometry::SIZES.keys - ["LETTER"]).each do |k|
     it "should provide #{k} geometry" do
       @pdf = Prawn::Document.new(:page_size => k)
-      pages = PDF::Inspector::Page.analyze(@pdf.render).pages   
+      pages = PDF::Inspector::Page.analyze(@pdf.render).pages
       pages.first[:size].should == Prawn::Document::PageGeometry::SIZES[k]
     end
   end
-  
-  it "should allow custom page size" do 
+
+  it "should allow custom page size" do
     @pdf = Prawn::Document.new(:page_size => [1920, 1080] )
-    pages = PDF::Inspector::Page.analyze(@pdf.render).pages   
-    pages.first[:size].should == [1920, 1080]   
+    pages = PDF::Inspector::Page.analyze(@pdf.render).pages
+    pages.first[:size].should == [1920, 1080]
   end
 
 
@@ -325,14 +325,14 @@ describe "When setting page size" do
     end
   end
 
-end       
+end
 
 describe "When setting page layout" do
   it "should reverse coordinates for landscape" do
     @pdf = Prawn::Document.new(:page_size => "A4", :page_layout => :landscape)
-    pages = PDF::Inspector::Page.analyze(@pdf.render).pages    
+    pages = PDF::Inspector::Page.analyze(@pdf.render).pages
     pages.first[:size].should == Prawn::Document::PageGeometry::SIZES["A4"].reverse
-  end   
+  end
 
   it "should retain page layout by default when starting a new page" do
     @pdf = Prawn::Document.new(:page_layout => :landscape)
@@ -362,7 +362,7 @@ describe "The mask() feature" do
       @pdf.line_width.should.not == line_width
     end
     @pdf.y.should == y
-    @pdf.line_width.should == line_width 
+    @pdf.line_width.should == line_width
   end
 end
 
@@ -433,14 +433,14 @@ describe "The render() feature" do
 
   it "should trigger before_render callbacks just before rendering" do
     pdf = Prawn::Document.new
-    
+
     seq = sequence("callback_order")
 
     # Verify the order: finalize -> fire callbacks -> render body
     pdf.expects(:finalize_all_page_contents).in_sequence(seq)
     trigger = mock()
     trigger.expects(:fire).in_sequence(seq)
-    
+
     # Store away the render_body method to be called below
     render_body = pdf.method(:render_body)
     pdf.expects(:render_body).in_sequence(seq)
@@ -464,10 +464,10 @@ end
 describe "The :optimize_objects option" do
   before(:all) do
     @wasteful_doc = lambda do |pdf|
-      pdf.transaction do 
+      pdf.transaction do
         pdf.start_new_page
         pdf.text "Hidden text"
-        pdf.rollback 
+        pdf.rollback
       end
 
       pdf.text "Hello world"
@@ -483,7 +483,7 @@ describe "The :optimize_objects option" do
 
   it "should default to :false" do
     default_pdf  = Prawn::Document.new(&@wasteful_doc)
-    wasteful_pdf = Prawn::Document.new(:optimize_objects => false, 
+    wasteful_pdf = Prawn::Document.new(:optimize_objects => false,
                                        &@wasteful_doc)
     default_pdf.render.size.should == wasteful_pdf.render.size
   end
@@ -565,25 +565,25 @@ describe "The number_pages method" do
   before do
     @pdf = Prawn::Document.new(:skip_page_creation => true)
   end
-  
+
   it "replaces the '<page>' string with the proper page number" do
     @pdf.start_new_page
     @pdf.expects(:text_box).with("1, test", { :height => 50 })
     @pdf.number_pages "<page>, test", {:page_filter => :all}
   end
-  
+
   it "replaces the '<total>' string with the total page count" do
     @pdf.start_new_page
     @pdf.expects(:text_box).with("test, 1", { :height => 50 })
     @pdf.number_pages "test, <total>", {:page_filter => :all}
   end
- 
+
   it "must print each page if given the :all page_filter" do
     10.times { @pdf.start_new_page }
     @pdf.expects(:text_box).times(10)
     @pdf.number_pages "test", {:page_filter => :all}
   end
-  
+
   it "must print each page if no :page_filter is specified" do
     10.times { @pdf.start_new_page }
     @pdf.expects(:text_box).times(10)
@@ -595,8 +595,8 @@ describe "The number_pages method" do
     @pdf.expects(:text_box).never
     @pdf.number_pages "test", {:page_filter => nil}
   end
-  
-  context "start_count_at option" do    
+
+  context "start_count_at option" do
     [1, 2].each do |startat|
       context "equal to #{startat}" do
         it "increments the pages" do
@@ -605,10 +605,10 @@ describe "The number_pages method" do
           @pdf.expects(:text_box).with("#{startat} 2", { :height => 50 })
           @pdf.expects(:text_box).with("#{startat+1} 2", { :height => 50 })
           @pdf.number_pages "<page> <total>", options
-        end  
+        end
       end
     end
-      
+
     [0, nil].each do |val|
       context "equal to #{val}" do
         it "defaults to start at page 1" do
@@ -622,7 +622,7 @@ describe "The number_pages method" do
       end
     end
   end
-  
+
   context "total_pages option" do
     it "allows the total pages count to be overridden" do
       2.times { @pdf.start_new_page }
@@ -631,7 +631,7 @@ describe "The number_pages method" do
       @pdf.number_pages "<page> <total>", :page_filter => :all, :total_pages => 10
     end
   end
-  
+
   context "special page filter" do
     context "such as :odd" do
       it "increments the pages" do
@@ -683,11 +683,11 @@ describe "The page_match? method" do
     @pdf = Prawn::Document.new(:skip_page_creation => true)
     10.times {@pdf.start_new_page}
   end
-  
+
   it "returns nil given no filter" do
     assert ! @pdf.page_match?(:nil, 1)
   end
-  
+
   it "must provide an :all filter" do
     assert (1..@pdf.page_count).all? { |i| @pdf.page_match?(:all, i) }
   end
@@ -711,5 +711,5 @@ describe "The page_match? method" do
   it "must be able to filter by an arbitrary proc" do
     fltr = lambda { |x| x == 1 or x % 3 == 0 }
     assert_equal [1,3,6,9], (1..10).select { |i| @pdf.page_match?(fltr, i) }
-  end    
+  end
 end

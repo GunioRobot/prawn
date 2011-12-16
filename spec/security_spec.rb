@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "tempfile"
 
-require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper") 
+require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper")
 
 describe "Document encryption" do
 
@@ -31,9 +31,9 @@ describe "Document encryption" do
     end
 
   end
-  
+
   describe "Setting permissions" do
-    
+
     def doc_with_permissions(permissions)
       pdf = Prawn::Document.new
 
@@ -120,7 +120,7 @@ describe "Document encryption" do
       Prawn::Core::EncryptedPdfObject(["foo", "bar"], "12345", 123, 0).should ==
         "[<4ad6e3> <4ed8fe>]"
     end
-    
+
   end
 
 end

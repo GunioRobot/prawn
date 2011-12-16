@@ -12,4 +12,4 @@ Prawn::Document.generate("indent_page_breaks.pdf") do
     end
   end
 end
-   
+

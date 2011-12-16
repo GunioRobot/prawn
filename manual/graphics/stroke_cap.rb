@@ -18,7 +18,7 @@ require File.expand_path(File.join(File.dirname(__FILE__),
 filename = File.basename(__FILE__).gsub('.rb', '.pdf')
 Prawn::Example.generate(filename) do
   stroke_axis
-  
+
   self.line_width = 25
   y = 250
 
@@ -28,12 +28,12 @@ Prawn::Example.generate(filename) do
     when 1; self.cap_style = :round
     when 2; self.cap_style = :projecting_square
     end
-    
+
     stroke_horizontal_line 100, 300, :at => y
     stroke_circle [400, y], 15
-    
+
     y -= 100
   end
-  
+
   reset_drawing_settings
 end

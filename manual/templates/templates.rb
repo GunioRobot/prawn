@@ -13,7 +13,7 @@ Prawn::Example.generate("templates.pdf") do
       },
       "page_template"
     ]
-    
+
   ) do
     text "Templates let you embed other PDF documents inside the current one.
 

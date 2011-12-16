@@ -21,20 +21,20 @@ Prawn::Example.generate(filename) do
   text "You also might want to look at the pdf used as a template: "
   url = "https://github.com/sandal/prawn/raw/master/data/pdfs/form.pdf"
   formatted_text [{:text => url, :link => url}]
-  
+
   filename = "#{Prawn::DATADIR}/pdfs/form.pdf"
   start_new_page(:template => filename)
-  
+
   start_new_page(:template => filename, :template_page => 2)
-  
+
   start_new_page(:template => filename, :template_page => 2)
-  
+
   fill_color "FF8888"
-  
+
   text_box "John Doe", :at => [75, cursor-75]
   text_box "john@doe.com", :at => [75, cursor-105]
   text_box "John Doe inc", :at => [75, cursor-135]
   text_box "You didn't think I'd tell, did you?", :at => [75, cursor-165]
-  
+
   fill_color "000000"
 end

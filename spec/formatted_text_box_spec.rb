@@ -84,7 +84,7 @@ describe "Text::Formatted::Box wrapping" do
     end
     text_box.text.should == "Noua Delineatio Geographica\ngeneralis | Apostolicarum\nperegrinationum | S FRANCISCI\nXAUERII | Indiarum & Iaponi\346\nApostoli"
   end
-  
+
   describe "Unicode" do
     before do
       if RUBY_VERSION < '1.9'
@@ -96,7 +96,7 @@ describe "Text::Formatted::Box wrapping" do
         Encoding.default_internal = Encoding::UTF_8
       end
     end
-    
+
     after do
       if RUBY_VERSION < '1.9'
         $KCODE=@reset_value

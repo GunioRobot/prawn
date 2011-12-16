@@ -45,7 +45,7 @@ Prawn::Example.generate("text.pdf") do
                 ]
       ]
     ]
-    
+
   ) do
     text "This is probably the feature people will use the most. There is no shortage of options when it comes to text. You'll be hard pressed to find a use case that is not covered by one of the text methods and confgurable options.
 

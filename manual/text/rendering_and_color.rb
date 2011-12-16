@@ -19,7 +19,7 @@ filename = File.basename(__FILE__).gsub('.rb', '.pdf')
 Prawn::Example.generate(filename) do
   fill_color   "00ff00"
   stroke_color "0000ff"
-  
+
   font_size(40) do
     # normal rendering mode: fill
     text "This text is filled with green."
@@ -34,6 +34,6 @@ Prawn::Example.generate(filename) do
       text "This text is filled with green and stroked with blue"
     end
   end
-  
+
   reset_drawing_settings
 end

@@ -1,4 +1,4 @@
-# encoding: utf-8   
+# encoding: utf-8
 
 # text.rb: Text table cells.
 #
@@ -64,10 +64,10 @@ module Prawn
         # Draws the text content into its bounding box.
         #
         def draw_content
-          with_font do 
+          with_font do
             @pdf.move_down((@pdf.font.line_gap + @pdf.font.descender)/2)
             with_text_color do
-              text_box(:width => content_width + FPTolerance, 
+              text_box(:width => content_width + FPTolerance,
                        :height => content_height + FPTolerance,
                        :at => [0, @pdf.cursor]).render
             end
@@ -103,7 +103,7 @@ module Prawn
         ensure
           @pdf.fill_color(old_color)
         end
-        
+
         def text_box(extra_options={})
           if @text_options[:inline_format]
             options = @text_options.dup

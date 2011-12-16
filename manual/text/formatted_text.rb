@@ -39,7 +39,7 @@ Prawn::Example.generate(filename) do
                      :color => "0000FF",
                      :anchor => "Text Reference" }
                  ]
-  
+
   formatted_text_box [ { :text => "Just your regular" },
                        { :text => " text_box ", :font => "Courier" },
                        { :text => "with some additional formatting options " +

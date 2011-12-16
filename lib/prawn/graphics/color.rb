@@ -159,7 +159,7 @@ module Prawn
         if options[:pattern]
           set_color_space type, :Pattern
           add_content "/#{color} #{operator}"
-        else          
+        else
           set_color_space type, color_space(color)
           color = color_to_s(color)
           write_color(color, operator)
@@ -167,7 +167,7 @@ module Prawn
       end
 
       def set_fill_color(color = nil)
-        set_color :fill, color || current_fill_color        
+        set_color :fill, color || current_fill_color
       end
 
       def set_stroke_color(color = nil)
@@ -185,7 +185,7 @@ module Prawn
         graphic_state.color_space[type]
       end
 
-      def set_current_color_space(color_space, type)                
+      def set_current_color_space(color_space, type)
         save_graphics_state if graphic_state.nil?
         graphic_state.color_space[type] = color_space
       end
@@ -194,7 +194,7 @@ module Prawn
         graphic_state.fill_color
       end
 
-      def current_fill_color=(color)        
+      def current_fill_color=(color)
         graphic_state.fill_color = color
       end
 

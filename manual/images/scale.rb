@@ -13,11 +13,11 @@ Prawn::Example.generate(filename) do
   text "Normal size"
   image "#{Prawn::DATADIR}/images/stef.jpg"
   move_down 10
-  
+
   text "Scaled to 50%"
   image "#{Prawn::DATADIR}/images/stef.jpg", :scale => 0.5
   move_down 10
-  
+
   text "Scaled to 200%"
   image "#{Prawn::DATADIR}/images/stef.jpg", :scale => 2
 end

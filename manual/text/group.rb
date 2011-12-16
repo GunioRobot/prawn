@@ -19,7 +19,7 @@ filename = File.basename(__FILE__).gsub('.rb', '.pdf')
 Prawn::Example.generate(filename) do
   move_cursor_to 80
   text "Let's move to the end of the page so that you can see group in action."
-  
+
   group do
     text "This block of text was too big to be rendered on the bottom of the " +
          " previous page. So it was rendered entirely on this new page. " +

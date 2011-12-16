@@ -14,7 +14,7 @@ require 'enumerator'
 Prawn.debug = true
 
 module Prawn
-  
+
   # The Prawn::Example class holds all the helper methods used to generate the
   # Prawn by example manual.
   #
@@ -39,7 +39,7 @@ module Prawn
     def load_package(package)
       load_file(package, package)
     end
-    
+
     # Loads a page with outline support. Used on the manual.
     #
     def load_page(page, page_name = nil)
@@ -57,7 +57,7 @@ module Prawn
       data = read_file(package, "#{file}.rb")
       eval extract_generate_block(data)
     end
-    
+
     # Create a package cover and load the examples provided in examples_outline
     # with outline support. Accepts an optional block to be used as the cover
     # content. Used by the package files.
@@ -65,7 +65,7 @@ module Prawn
     def build_package(package, examples_outline, &block)
       title = package.gsub("_", " ").capitalize
       header(title)
-      
+
       if block_given?
         instance_eval(&block)
       end
@@ -73,51 +73,51 @@ module Prawn
       outline.define do
         section(title, :destination => page_number, :closed => true)
       end
-      
+
       build_package_examples(package, title, examples_outline)
     end
-    
+
     # Recursively iterates through the examples subsections or pages according
     # to the examples_outline.
     #
     def build_package_examples(package, title, examples_outline)
       examples_outline.each do |example_or_subsection|
-        
+
         case example_or_subsection
         when Array
-          
-          outline.add_subsection_to(title) do 
+
+          outline.add_subsection_to(title) do
             outline.section(example_or_subsection.first, :closed => true)
           end
-          
+
           build_package_examples(package,
                                  example_or_subsection.first,
                                  example_or_subsection.last)
-          
+
         when Hash
           example = example_or_subsection.delete(:name)
           load_example(package, "#{example}.rb", example_or_subsection)
-          
-          outline.add_subsection_to(title) do 
+
+          outline.add_subsection_to(title) do
             outline.page(:destination => page_number,
                          :title => example.gsub("_", " ").capitalize)
           end
-        
+
         else
           initial_page = page_number + 1
           load_example(package, "#{example_or_subsection}.rb")
-          
-          outline.add_subsection_to(title) do 
+
+          outline.add_subsection_to(title) do
             outline.page(:destination => initial_page,
                     :title => example_or_subsection.gsub("_", " ").capitalize)
           end
         end
       end
     end
-  
+
     # Starts a new page to load an example from a given package. Renders an
     # introductory text and the example source. Available boolean options are:
-    # 
+    #
     # <tt>:eval_source</tt>:: Evals the example source code (default: true)
     # <tt>:full_source</tt>:: Extract the full source code when true. Extract
     # only the code between the generate block when false (default: false)
@@ -126,21 +126,21 @@ module Prawn
       options = { :eval_source => true,
                   :full_source => false
                 }.merge(options)
-      
+
       data = read_file(package, example)
-      
+
       if options[:full_source]
         example_source = extract_full_source(data)
-      else  
+      else
         example_source = extract_generate_block(data)
       end
-      
+
       start_new_page
-      
+
       text("<color rgb='999999'>#{package}/</color>#{example}",
            :size => 20, :inline_format => true)
       move_down 10
-  
+
       text(extract_introduction_text(data), :inline_format => true)
 
       kai_file = "#{Prawn::DATADIR}/fonts/gkai00mp.ttf"
@@ -156,13 +156,13 @@ module Prawn
         text(example_source.gsub(' ', Prawn::Text::NBSP),
              :fallback_fonts => ["DejaVu", "Kai"])
       end
-      
+
       if options[:eval_source]
         move_down 10
         dash(3)
         stroke_horizontal_line(-36, bounds.width + 36)
         undash
-      
+
         move_down 10
         begin
           eval example_source
@@ -174,7 +174,7 @@ module Prawn
         end
       end
     end
-    
+
     # Returns the data read from a file in a given package
     #
     def read_file(package, file)
@@ -188,7 +188,7 @@ module Prawn
       end
       data
     end
-    
+
     # Render a page header. Used on the manual lone pages and package
     # introductory pages
     #
@@ -198,17 +198,17 @@ module Prawn
       stroke_horizontal_rule
       move_down 30
     end
-    
+
     # Render the arguments as a bulleted list. Used on the manual package
     # introductory pages
     #
     def list(*items)
       move_down 20
-      
+
       items.each do |li|
         float { text "•" }
         indent(10) do
-          text li.gsub(/\s+/," "), 
+          text li.gsub(/\s+/," "),
             :inline_format => true,
             :leading       => 2
         end
@@ -216,7 +216,7 @@ module Prawn
         move_down 10
       end
     end
-    
+
     # Draws X and Y axis rulers beginning at the margin box origin. Used on
     # examples.
     #
@@ -224,14 +224,14 @@ module Prawn
       options = { :height => (cursor - 20).to_i,
                   :width => bounds.width.to_i
                 }.merge(options)
-      
+
       dash(1, :space => 4)
       stroke_horizontal_line(-21, options[:width], :at => 0)
       stroke_vertical_line(-21, options[:height], :at => 0)
       undash
-      
+
       fill_circle [0, 0], 1
-      
+
       (100..options[:width]).step(100) do |point|
         fill_circle [point, 0], 1
         draw_text point, :at => [point-5, -10], :size => 7
@@ -242,7 +242,7 @@ module Prawn
         draw_text point, :at => [-17, point-2], :size => 7
       end
     end
-    
+
     # Reset some of the drawing settings to their defaults. Used on examples.
     #
     def reset_drawing_settings
@@ -261,13 +261,13 @@ module Prawn
     def extract_full_source(source)
       source.gsub(/# encoding.*?\n.*require.*?\n\n/m, "\n")
     end
-    
+
     # Retrieve the code inside the generate block
     #
     def extract_generate_block(source)
       source.slice(/\w+\.generate.*? do(.*)end/m, 1) or source
     end
-  
+
     # Retrieve the comments between the encoding declaration and the require
     # call for example_helper.rb
     #
@@ -279,15 +279,15 @@ module Prawn
       intro.gsub!(/^#/, '')
       intro.gsub!("\n", "\n\n")
       intro.rstrip!
-      
+
       # Process the <code> tags
       intro.gsub!(/<code>([^<]+?)<\/code>/,
                   "<font name='Courier'>\\1<\/font>")
-      
+
       # Process the links
       intro.gsub!(/(https?:\/\/\S+)/,
                   "<link href=\"\\1\">\\1</link>")
-      
+
       intro
     end
   end

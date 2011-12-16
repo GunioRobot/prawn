@@ -21,10 +21,10 @@ Prawn::Example.generate(filename) do
     text "Written with the Chalkboard TTF font."
   end
   move_down 20
-  
+
   text "Written with the default font."
   move_down 20
-  
+
   # Using an DFONT font file
   font "#{Prawn::DATADIR}/fonts/Action Man.dfont" do
     text "Written with the Action Man DFONT font"

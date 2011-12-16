@@ -16,7 +16,7 @@ module Prawn
     class JPG < Image
       attr_reader :width, :height, :bits, :channels
       attr_accessor :scaled_width, :scaled_height
-      
+
       JPEG_SOF_BLOCKS = %W(\xc0 \xc1 \xc2 \xc3 \xc5 \xc6 \xc7 \xc9 \xca \xcb \xcd \xce \xcf)
       JPEG_APP_BLOCKS = %W(\xe0 \xe1 \xe2 \xe3 \xe4 \xe5 \xe6 \xe7 \xe8 \xe9 \xea \xeb \xec \xed \xee \xef)
 
@@ -67,7 +67,7 @@ module Prawn
           :Width            => width,
           :Height           => height,
           :Length           => @data.size
-        ) 
+        )
 
         # add extra decode params for CMYK images. By swapping the
         # min and max values from the default, we invert the colours. See

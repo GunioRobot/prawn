@@ -5,10 +5,10 @@ Bundler.setup
 require 'rake'
 require 'rake/testtask'
 require "rake/rdoctask"
-require "rake/gempackagetask"  
+require "rake/gempackagetask"
 
 task :default => [:test]
-       
+
 desc "Run all tests, test-spec, mocha, and pdf-reader required"
 Rake::TestTask.new do |test|
   # test.ruby_opts  << "-w"  # .should == true triggers a lot of warnings
@@ -20,8 +20,8 @@ end
 desc "Show library's code statistics"
 task :stats do
 	require 'code_statistics'
-  CodeStatistics::TEST_TYPES << "Specs"	
-	CodeStatistics.new( ["Prawn", "lib"], 
+  CodeStatistics::TEST_TYPES << "Specs"
+	CodeStatistics.new( ["Prawn", "lib"],
 	                    ["Specs", "spec"] ).to_s
 end
 
@@ -29,7 +29,7 @@ desc "genrates documentation"
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include( "README",
                            "COPYING",
-                           "LICENSE", 
+                           "LICENSE",
                            "HACKING", "lib/" )
   rdoc.main     = "README"
   rdoc.rdoc_dir = "doc/html"

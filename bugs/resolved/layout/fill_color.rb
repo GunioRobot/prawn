@@ -9,6 +9,6 @@ require "prawn/layout"
 
 Prawn::Document.generate("fill_color.pdf") do
   fill_color "ff0000"
-  table [%w[1 2 3],%w[4 5 6],%w[7 8 9]], 
+  table [%w[1 2 3],%w[4 5 6],%w[7 8 9]],
 end
 

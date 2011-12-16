@@ -60,7 +60,7 @@ module Prawn
                       row_spec.include?(c.row) : row_spec === c.row })
       end
       alias_method :row, :rows
-      
+
       # Limits selection to the given column or columns. +col_spec+ can be
       # anything that responds to the === operator selecting a set of 0-based
       # column numbers; most commonly a number or a range.
@@ -72,7 +72,7 @@ module Prawn
         index_cells unless @indexed
         col_spec = transform_spec(col_spec, @column_count)
         Cells.new(@columns[col_spec] ||= select { |c|
-                    col_spec.respond_to?(:include?) ? 
+                    col_spec.respond_to?(:include?) ?
                       col_spec.include?(c.column) : col_spec === c.column })
       end
       alias_method :column, :columns
@@ -88,7 +88,7 @@ module Prawn
 
       # Retrieves a cell based on its 0-based row and column. Returns an
       # individual Cell, not a Cells collection.
-      # 
+      #
       #   table.cells[0, 0].content # => "First cell content"
       #
       def [](row, col)
@@ -117,8 +117,8 @@ module Prawn
       #
       def width
         column_widths = {}
-        each do |cell| 
-          column_widths[cell.column] = 
+        each do |cell|
+          column_widths[cell.column] =
             [column_widths[cell.column], cell.width].compact.max
         end
         column_widths.values.inject(0) { |sum, width| sum + width }
@@ -128,8 +128,8 @@ module Prawn
       #
       def min_width
         column_min_widths = {}
-        each do |cell| 
-          column_min_widths[cell.column] = 
+        each do |cell|
+          column_min_widths[cell.column] =
             [column_min_widths[cell.column], cell.min_width].compact.max
         end
         column_min_widths.values.inject(0) { |sum, width| sum + width }
@@ -139,8 +139,8 @@ module Prawn
       #
       def max_width
         column_max_widths = {}
-        each do |cell| 
-          column_max_widths[cell.column] = 
+        each do |cell|
+          column_max_widths[cell.column] =
             [column_max_widths[cell.column], cell.max_width].compact.min
         end
         column_max_widths.values.inject(0) { |sum, width| sum + width }
@@ -150,8 +150,8 @@ module Prawn
       #
       def height
         row_heights = {}
-        each do |cell| 
-          row_heights[cell.row] = 
+        each do |cell|
+          row_heights[cell.row] =
             [row_heights[cell.row], cell.height].compact.max
         end
         row_heights.values.inject(0) { |sum, width| sum + width }
@@ -166,13 +166,13 @@ module Prawn
       end
 
       protected
-      
+
       # Defers indexing until rows() or columns() is actually called on the
       # Cells object. Without this, we would needlessly index the leaf nodes of
       # the object graph, the ones that are only there to be iterated over.
       #
       # Make sure to call this before using @rows or @columns.
-      # 
+      #
       def index_cells
         @rows = {}
         @columns = {}

@@ -6,7 +6,7 @@ require 'rubygems'
 require 'prawn'
 
 ##
-# This bug was reported in comments in issue #200 
+# This bug was reported in comments in issue #200
 # When the bug is fixed the stamp text and shape color should be set to a blue CMYK color
 
 pdf = Prawn::Document.generate("stamp_color_issues.pdf", :margin => [40, 45, 50, 45]) do

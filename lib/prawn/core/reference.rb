@@ -8,36 +8,36 @@
 
 require 'zlib'
 
-module Prawn  
+module Prawn
   module Core
-  
+
     class Reference #:nodoc:
 
       attr_accessor :gen, :data, :offset, :stream, :live, :identifier
-      
+
       def initialize(id, data)
-        @identifier = id 
-        @gen        = 0       
-        @data       = data     
+        @identifier = id
+        @gen        = 0
+        @data       = data
         @compressed = false
         @stream     = nil
-      end            
-      
-      def object 
+      end
+
+      def object
         output = "#{@identifier} #{gen} obj\n" <<
                  Prawn::Core::PdfObject(data) << "\n"
         if @stream
-          output << "stream\n" << @stream << "\nendstream\n" 
+          output << "stream\n" << @stream << "\nendstream\n"
         end
         output << "endobj\n"
-      end  
-      
+      end
+
       def <<(data)
         raise 'Cannot add data to a stream that is compressed' if @compressed
-        (@stream ||= "") << data  
-      end  
-      
-      def to_s            
+        (@stream ||= "") << data
+      end
+
+      def to_s
         "#{@identifier} #{gen} R"
       end
 
@@ -73,7 +73,7 @@ module Prawn
         r.stream = Marshal.load(Marshal.dump(r.stream))
         r
       end
-      
+
       # Replaces the data and stream with that of other_ref. Preserves compressed
       # status.
       def replace(other_ref)
@@ -104,12 +104,12 @@ module Prawn
         end.flatten.grep(self.class)
       end
 
-    end         
+    end
 
     module_function
-    
+
     def Reference(*args, &block) #:nodoc:
       Reference.new(*args, &block)
-    end     
+    end
   end
 end

@@ -182,7 +182,7 @@ module Prawn
 
         # append the actual image data to the object as a stream
         obj << img_data
-        
+
         # sort out the colours of the image
         if palette.empty?
           obj.data[:ColorSpace] = color
@@ -192,7 +192,7 @@ module Prawn
           palette_obj << palette
 
           # build the color space array for the image
-          obj.data[:ColorSpace] = [:Indexed, 
+          obj.data[:ColorSpace] = [:Indexed,
                                    :DeviceRGB,
                                    (palette.size / 3) -1,
                                    palette_obj]

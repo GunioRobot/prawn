@@ -25,22 +25,22 @@ module Prawn
     # Options:
     # <tt>:at</tt>:: an array [x,y] with the location of the top left corner of the image.
     # <tt>:position</tt>::  One of (:left, :center, :right) or an x-offset
-    # <tt>:vposition</tt>::  One of (:top, :center, :center) or an y-offset    
+    # <tt>:vposition</tt>::  One of (:top, :center, :center) or an y-offset
     # <tt>:height</tt>:: the height of the image [actual height of the image]
     # <tt>:width</tt>:: the width of the image [actual width of the image]
     # <tt>:scale</tt>:: scale the dimensions of the image proportionally
     # <tt>:fit</tt>:: scale the dimensions of the image proportionally to fit inside [width,height]
-    # 
-    #   Prawn::Document.generate("image2.pdf", :page_layout => :landscape) do     
-    #     pigs = "#{Prawn::DATADIR}/images/pigs.jpg" 
-    #     image pigs, :at => [50,450], :width => 450                                      
+    #
+    #   Prawn::Document.generate("image2.pdf", :page_layout => :landscape) do
+    #     pigs = "#{Prawn::DATADIR}/images/pigs.jpg"
+    #     image pigs, :at => [50,450], :width => 450
     #
     #     dice = "#{Prawn::DATADIR}/images/dice.png"
-    #     image dice, :at => [50, 450], :scale => 0.75 
-    #   end   
+    #     image dice, :at => [50, 450], :scale => 0.75
+    #   end
     #
     # If only one of :width / :height are provided, the image will be scaled
-    # proportionally.  When both are provided, the image will be stretched to 
+    # proportionally.  When both are provided, the image will be stretched to
     # fit the dimensions without maintaining the aspect ratio.
     #
     #
@@ -54,16 +54,16 @@ module Prawn
     #
     #   require "open-uri"
     #
-    #   Prawn::Document.generate("remote_images.pdf") do 
+    #   Prawn::Document.generate("remote_images.pdf") do
     #     image open("http://prawn.majesticseacreature.com/media/prawn_logo.png")
     #   end
     #
     # This method returns an image info object which can be used to check the
-    # dimensions of an image object if needed. 
+    # dimensions of an image object if needed.
     # (See also: Prawn::Images::PNG , Prawn::Images::JPG)
-    # 
+    #
     def image(file, options={})
-      Prawn.verify_options [:at, :position, :vposition, :height, 
+      Prawn.verify_options [:at, :position, :vposition, :height,
                             :width, :scale, :fit], options
 
       pdf_obj, info = build_image_object(file)
@@ -79,10 +79,10 @@ module Prawn
       if file.respond_to?(:read)
         image_content = file.read
       else
-        raise ArgumentError, "#{file} not found" unless File.file?(file)  
+        raise ArgumentError, "#{file} not found" unless File.file?(file)
         image_content = File.binread(file)
       end
-      
+
       image_sha1 = Digest::SHA1.hexdigest(image_content)
 
       # if this image has already been embedded, just reuse it
@@ -114,14 +114,14 @@ module Prawn
     # given.
     #
     def embed_image(pdf_obj, info, options)
-      # find where the image will be placed and how big it will be  
+      # find where the image will be placed and how big it will be
       w,h = info.calc_image_dimensions(options)
 
-      if options[:at]     
-        x,y = map_to_absolute(options[:at]) 
-      else                  
-        x,y = image_position(w,h,options) 
-        move_text_position h   
+      if options[:at]
+        x,y = map_to_absolute(options[:at])
+      else
+        x,y = image_position(w,h,options)
+        move_text_position h
       end
 
       # add a reference to the image object to the current page
@@ -133,17 +133,17 @@ module Prawn
       instruct = "\nq\n%.3f 0 0 %.3f %.3f %.3f cm\n/%s Do\nQ"
       add_content instruct % [ w, h, x, y - h, label ]
     end
-    
-    private   
+
+    private
 
     def image_position(w,h,options)
       options[:position] ||= :left
-      
-      x = case options[:position] 
+
+      x = case options[:position]
       when :left
         bounds.absolute_left
       when :center
-        bounds.absolute_left + (bounds.width - w) / 2.0 
+        bounds.absolute_left + (bounds.width - w) / 2.0
       when :right
         bounds.absolute_right - w
       when Numeric
@@ -163,19 +163,19 @@ module Prawn
         determine_y_with_page_flow(h)
       end
       return [x,y]
-    end 
-    
+    end
+
     def determine_y_with_page_flow(h)
       if overruns_page?(h)
         start_new_page
-        bounds.absolute_top 
+        bounds.absolute_top
       else
         self.y
       end
-    end 
-    
+    end
+
     def overruns_page?(h)
-      (self.y - h) < reference_bounds.absolute_bottom 
+      (self.y - h) < reference_bounds.absolute_bottom
     end
 
     def image_registry

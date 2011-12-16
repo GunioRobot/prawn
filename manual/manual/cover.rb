@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-# Prawn manual how to read this manual page. 
+# Prawn manual how to read this manual page.
 #
 require File.expand_path(File.join(File.dirname(__FILE__),
                                    %w[.. example_helper]))
@@ -12,7 +12,7 @@ Prawn::Example.generate(filename) do
   image "#{Prawn::DATADIR}/images/prawn.png",
         :scale => 0.9,
         :at => [10, cursor]
-        
+
   formatted_text_box([ {:text => "Prawn\n",
                         :styles => [:bold],
                         :size => 100}
@@ -22,5 +22,5 @@ Prawn::Example.generate(filename) do
                         :font => 'Courier',
                         :size => 60}
                      ], :at => [170, cursor - 160])
-  
+
 end

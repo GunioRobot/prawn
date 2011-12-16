@@ -285,7 +285,7 @@ module Prawn
             @max_descender = [@max_descender, fragment.descender].compact.max
             @max_ascender = [@max_ascender, fragment.ascender].compact.max
           end
-          
+
         end
 
       end

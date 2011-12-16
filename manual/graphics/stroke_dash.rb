@@ -8,7 +8,7 @@
 # dashes.
 #
 # The <code>:phase</code> option defines the start point of the sequence of
-# dashes and spaces. 
+# dashes and spaces.
 #
 require File.expand_path(File.join(File.dirname(__FILE__),
                                    %w[.. example_helper]))
@@ -16,14 +16,14 @@ require File.expand_path(File.join(File.dirname(__FILE__),
 filename = File.basename(__FILE__).gsub('.rb', '.pdf')
 Prawn::Example.generate(filename) do
   stroke_axis
-  
+
   base_y = 210
-  
+
   24.times do |i|
     length = (i / 4) + 1
     space = length            # space between dashes same length as dash
     phase = 0                 # start with dash
-    
+
     case i % 4
     when 0
       base_y -= 5
@@ -36,10 +36,10 @@ Prawn::Example.generate(filename) do
       phase = length          # start with space between dashes
     end
     base_y -= 5
-    
+
     dash(length, :space => space, :phase => phase)
     stroke_horizontal_line 50, 500, :at => base_y - (2 * i)
   end
-  
+
   undash                      # revert stroke back to normal
 end
